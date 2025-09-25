@@ -36,6 +36,19 @@ class WorkoutProgressionEngine:
         seconds = total_seconds % 60
         return f"{minutes}:{seconds:02d}"
 
+    def _normalize_day_name(self, day: str) -> str:
+        """Convert full day names to abbreviated format for schedule matching."""
+        day_mapping = {
+            'Monday': 'Mon',
+            'Tuesday': 'Tue',
+            'Wednesday': 'Wed',
+            'Thursday': 'Thu',
+            'Friday': 'Fri',
+            'Saturday': 'Sat',
+            'Sunday': 'Sun'
+        }
+        return day_mapping.get(day, day)
+
     def _calculate_training_pace(self, week: int, intensity: str) -> str:
         """Calculate training pace based on week and intensity."""
         weekly_targets = self.fitness_calculator.get_weekly_targets(week)
@@ -115,9 +128,8 @@ class WorkoutProgressionEngine:
         # Add core component
         weekly_targets = self.fitness_calculator.get_weekly_targets(week)
         situp_target = max(int(weekly_targets['situps'] * 0.6), 10)
-        plank_target = weekly_targets['plank']
 
-        workout['core_component'] = f'Core: {situp_target} sit-ups, plank {plank_target}, side planks 2×30s'
+        workout['core_component'] = f'Core: {situp_target} sit-ups, dead bug 2×10/side, side planks 2×30s'
 
         return workout
 
@@ -153,7 +165,6 @@ class WorkoutProgressionEngine:
         # Progressive loading
         pushup_target = int(weekly_targets['pushups'] * volume_multiplier)
         situp_target = int(weekly_targets['situps'] * volume_multiplier)
-        plank_target = weekly_targets['plank']
 
         # Determine set/rep scheme based on progression
         if week < 4:
@@ -169,7 +180,7 @@ class WorkoutProgressionEngine:
             'main_set': {
                 'push_ups': pushup_sets,
                 'sit_ups': f'4×{max(int(situp_target * 0.7), 15)}',
-                'plank': f'3×{plank_target}',
+                'dead_bugs': '3×10/side',
                 'squats': '3×15-20',
                 'lunges': '3×10/leg',
                 'pull_ups': '3×max reps or assisted',
@@ -241,16 +252,18 @@ class WorkoutProgressionEngine:
         # Determine workout type based on day if not specified
         if not workout_type:
             schedule = self.training_config['schedule']
-            if day in schedule['workout_days']:
+            normalized_day = self._normalize_day_name(day)
+
+            if normalized_day in schedule['workout_days']:
                 # Rotate workout types for main training days
-                day_index = schedule['workout_days'].index(day)
+                day_index = schedule['workout_days'].index(normalized_day)
                 workout_types = ['run_intervals', 'tempo_run', 'pfa_circuit']
                 workout_type = workout_types[day_index % len(workout_types)]
-            elif day in schedule['strength_days']:
+            elif normalized_day in schedule['strength_days']:
                 workout_type = 'strength_core'
-            elif day in schedule['rest_days']:
+            elif normalized_day in schedule['rest_days']:
                 # Optional easy activity on rest days
-                if day == 'Saturday':
+                if normalized_day == 'Sat':
                     workout_type = 'easy_run'
                 else:
                     return {'type': 'rest', 'activity': 'Complete rest or light stretching'}
@@ -263,6 +276,28 @@ class WorkoutProgressionEngine:
             workout['week'] = week + 1
             workout['day'] = day
             workout['volume_multiplier'] = volume_multiplier
+
+            # Add workout time based on day type
+            if 'workout_times' not in self.training_config:
+                raise ValueError("Missing 'workout_times' configuration")
+
+            workout_times = self.training_config['workout_times']
+
+            if normalized_day in self.training_config['schedule']['workout_days']:
+                if 'workout_days' not in workout_times:
+                    raise ValueError("Missing 'workout_days' time in workout_times config")
+                workout['time'] = workout_times['workout_days']
+            elif normalized_day in self.training_config['schedule']['strength_days']:
+                if 'strength_days' not in workout_times:
+                    raise ValueError("Missing 'strength_days' time in workout_times config")
+                workout['time'] = workout_times['strength_days']
+            elif normalized_day in ['Sat']:
+                if 'easy_days' not in workout_times:
+                    raise ValueError("Missing 'easy_days' time in workout_times config")
+                workout['time'] = workout_times['easy_days']
+            else:
+                raise ValueError(f"No workout time configured for day: {normalized_day}")
+
             return workout
         else:
             raise ValueError(f"Unknown workout type: {workout_type}")

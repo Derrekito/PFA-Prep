@@ -14,13 +14,11 @@ fitness:
     run_time: "13:45"          # Already in good shape
     pushups: 45
     situps: 55
-    plank: "2:30"
 
   goals:
     run_time: "11:30"          # Aggressive improvement goals
     pushups: 75
     situps: 80
-    plank: "4:00"
 
   pfa_standards:               # Male 30-39 age group example
     run_time: "13:36"

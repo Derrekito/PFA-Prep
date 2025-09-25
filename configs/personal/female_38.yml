@@ -1,0 +1,159 @@
+timeline:
+  start_date: "2025-09-26"
+  weeks: 40
+  buffer_weeks:
+    run: 4
+    pushups: 2
+    situps: 8
+
+fitness:
+  baseline:
+    run_time: "38:00"        # Starting 2-mile run time
+    pushups: 15              # Current max pushups
+    situps: 35               # Current max situps
+
+  goals:
+    run_time: "16:00"        # Target 2-mile run time (excellent level)
+    pushups: 27              # Target pushups (excellent level)
+    situps: 45               # Target situps (excellent level)
+
+  pfa_standards:             # 35-39 age group female minimums from PDF
+    run_time: "20:44"        # Minimum passing time
+    pushups: 10              # Minimum passing pushups
+    situps: 24               # Minimum passing situps
+
+nutrition:
+  eating_window:
+    type: "time_restricted"
+    start_time: "11:00"
+    end_time: "19:00"
+
+  calorie_goals:
+    target: 1800             # Appropriate calorie needs for female
+
+  macros:                    # Percentage of daily calories
+    protein: 35              # 35% of calories from protein
+    carbs: 30                # 30% of calories from carbs
+    fat: 35                  # 35% of calories from fat
+
+  meal_timing:
+    pre_workout: "-30"        # Minutes before workout
+    post_workout: "+30"       # Minutes after workout
+    meals_per_day: 3          # Number of main meals
+    snacks_per_day: 2         # Number of snacks
+
+  dietary_preferences:
+    restrictions: ["none"]
+    allergies: []
+    dislikes: []
+
+supplements:
+  daily_stack:
+    - time: "07:00"
+      items:
+        - name: "Multivitamin"
+          dose: "1 tablet"
+        - name: "Vitamin D3"
+          dose: "5000 IU"
+    - time: "19:00"
+      items:
+        - name: "Omega-3"
+          dose: "1g EPA+DHA"
+        - name: "Calcium + Magnesium"
+          dose: "500mg + 250mg"
+
+  pre_workout:
+    enabled: true
+    timing: "-15"             # Minutes before workout
+    items:
+      - name: "Caffeine"
+        dose: "100mg"          # Lower caffeine dose for female
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Cordyceps"
+        dose: "750mg"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Beta-Alanine"
+        dose: "2g"             # Lower dose for female
+        days: ["Mon", "Wed", "Fri"]
+      - name: "L-Citrulline"
+        dose: "4g"             # Lower dose for female
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Rhodiola Rosea"
+        dose: "200mg"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Tyrosine"
+        dose: "1g"             # Lower dose for female
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Taurine"
+        dose: "1g"             # Lower dose for female
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Nitric Oxide Booster"
+        dose: "1 serving"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "HMB"
+        dose: "2g"             # Lower dose for female
+        days: ["Mon", "Wed", "Fri"]
+
+  post_workout:
+    enabled: true
+    timing: "+30"             # Minutes after workout
+    items:
+      - name: "Protein Powder"
+        dose: "11g"            # Smaller protein serving for female
+        condition: "if_no_meal_within_hour"
+
+training:
+  schedule:
+    workout_days: ["Mon", "Wed", "Fri"]
+    strength_days: ["Tue", "Thu"]
+    rest_days: ["Sat", "Sun"]
+
+  workout_times:
+    workout_days: "06:00"      # Main workout time (Mon/Wed/Fri)
+    strength_days: "18:00"     # Strength workout time (Tue/Thu)
+    easy_days: "07:30"         # Easy run time (Sat)
+
+  workout_types:
+    run_focused:
+      frequency: 3             # Times per week
+      progression_type: "time_based"
+      intensity_distribution:  # Percentage of workouts at each intensity
+        easy: 60               # 60% easy pace workouts
+        moderate: 25           # 25% moderate pace workouts
+        hard: 15               # 15% high intensity workouts
+
+    strength_focused:
+      frequency: 2             # Times per week
+      progression_type: "linear"
+      focus: ["pushups", "core", "functional"]
+
+progression:
+  adaptation_periods:          # Planned easier/deload weeks
+    frequency: 3               # Every 3rd week is a deload week
+    reduction: 0.75            # 75% of normal workout volume
+
+calendar:
+  timezone: "America/Denver"
+  output_dir: "./outputs/calendars/"
+
+  separate_calendars:
+    workout:
+      name: "PFA_Workouts_Female38"
+      color: "purple"
+      location: "Base Gym"
+      default_duration: 60     # Minutes per workout
+      reminders: ["-15", "-5"] # Minutes before event
+
+    meals:
+      name: "PFA_Meals_Female38"
+      color: "pink"
+      default_duration: 30     # Minutes per meal
+      reminders: ["-10"]       # Minutes before event
+
+    supplements:
+      name: "PFA_Supplements_Female38"
+      color: "coral"
+      default_duration: 5      # Minutes for supplement taking
+      reminders: ["-5"]        # Minutes before event
+
+  export_formats: ["ics"]

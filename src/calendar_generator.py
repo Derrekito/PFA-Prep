@@ -3,6 +3,7 @@
 
 import json
 import uuid
+import logging
 from datetime import datetime, date, time, timedelta, UTC
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from pathlib import Path
@@ -39,9 +40,13 @@ class CalendarGenerator:
         return text.replace("\n", "\\n")
 
     def _add_event(self, lines: List[str], start_utc: str, end_utc: str, summary: str,
-                   description: str = "", location: str = "", reminders: List[int] = None):
+                   description: str = "", location: str = "", reminders: List[int] = None,
+                   event_id: str = None):
         """Add a calendar event to the ICS lines."""
-        uid = f"{uuid.uuid4()}@pfa-plan"
+        if event_id:
+            uid = f"{event_id}@pfa-plan"
+        else:
+            uid = f"{uuid.uuid4()}@pfa-plan"
         lines.append("BEGIN:VEVENT")
         lines.append(f"DTSTART:{start_utc}")
         lines.append(f"DTEND:{end_utc}")
@@ -107,7 +112,14 @@ class CalendarGenerator:
 
                 # Calculate event date
                 day_index = self.weekdays.index(day_name)
-                event_date = start_date + timedelta(days=week * 7 + day_index)
+
+                # Find the first occurrence of this weekday on or after start_date
+                start_weekday = start_date.weekday()  # Monday = 0, Sunday = 6
+                days_until_target = (day_index - start_weekday) % 7
+                first_occurrence = start_date + timedelta(days=days_until_target)
+
+                # Add weeks to get the correct occurrence
+                event_date = first_occurrence + timedelta(days=week * 7)
 
                 # Determine workout time (default to 07:00)
                 workout_time = self._parse_time(workout.get('time', '07:00'))
@@ -145,7 +157,8 @@ class CalendarGenerator:
                 description = "\\n\\n".join(description_parts)
 
                 summary = f"{workout.get('type', 'Workout').replace('_', ' ').title()}"
-                self._add_event(lines, start_utc, end_utc, summary, description, location, reminders)
+                event_id = f"workout-week{week+1}-{day_name.lower()}"
+                self._add_event(lines, start_utc, end_utc, summary, description, location, reminders, event_id)
 
         lines.extend(self._create_calendar_footer())
         return "\n".join(lines)
@@ -186,8 +199,9 @@ class CalendarGenerator:
 
                         description = "\\n\\n".join(description_parts)
                         summary = meal_type.title()
+                        event_id = f"meal-week{week+1}-{day_name.lower()}-{meal_type}"
 
-                        self._add_event(lines, start_utc, end_utc, summary, description, "", reminders)
+                        self._add_event(lines, start_utc, end_utc, summary, description, "", reminders, event_id)
 
                 # Create events for snacks
                 for snack_key in daily_meals.keys():
@@ -209,8 +223,9 @@ class CalendarGenerator:
 
                             description = "\\n\\n".join(description_parts)
                             summary = f"Snack {snack_number}"
+                            event_id = f"snack-week{week+1}-{day_name.lower()}-{snack_number}"
 
-                            self._add_event(lines, start_utc, end_utc, summary, description, "", reminders)
+                            self._add_event(lines, start_utc, end_utc, summary, description, "", reminders, event_id)
 
         lines.extend(self._create_calendar_footer())
         return "\n".join(lines)
@@ -253,8 +268,11 @@ class CalendarGenerator:
 
                     description = "\\n".join(description_parts)
                     summary = supplement['name']
+                    # Create unique ID with supplement name (sanitized for ID)
+                    supp_name_clean = supplement['name'].replace(' ', '').replace('-', '').lower()
+                    event_id = f"supplement-week{week+1}-{day_name.lower()}-{supp_name_clean}"
 
-                    self._add_event(lines, start_utc, end_utc, summary, description, "", reminders)
+                    self._add_event(lines, start_utc, end_utc, summary, description, "", reminders, event_id)
 
         lines.extend(self._create_calendar_footer())
         return "\n".join(lines)

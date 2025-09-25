@@ -133,10 +133,14 @@ def generate_plan(config_path: str):
     print("  - Scheduling supplements...")
     # Create workout schedule for supplement timing
     workout_schedule = {}
+    workout_times = getattr(config.training, 'workout_times', {})
+
     for day in config.training.schedule['workout_days']:
-        workout_schedule[day] = datetime.strptime('07:00', '%H:%M').time()
+        time_str = workout_times.get('workout_days', '07:00')
+        workout_schedule[day] = datetime.strptime(time_str, '%H:%M').time()
     for day in config.training.schedule['strength_days']:
-        workout_schedule[day] = datetime.strptime('18:00', '%H:%M').time()
+        time_str = workout_times.get('strength_days', '18:00')
+        workout_schedule[day] = datetime.strptime(time_str, '%H:%M').time()
 
     supplement_schedule = supplement_scheduler.generate_weekly_schedule(workout_schedule)
 
@@ -162,7 +166,6 @@ def generate_plan(config_path: str):
     print(f"  Run time: {config.fitness.baseline['run_time']} → {config.fitness.goals['run_time']}")
     print(f"  Push-ups: {config.fitness.baseline['pushups']} → {config.fitness.goals['pushups']}")
     print(f"  Sit-ups: {config.fitness.baseline['situps']} → {config.fitness.goals['situps']}")
-    print(f"  Plank: {config.fitness.baseline['plank']} → {config.fitness.goals['plank']}")
 
     print(f"\nNutrition:")
     print(f"  Daily calories: {config.nutrition.calorie_goals['target']}")

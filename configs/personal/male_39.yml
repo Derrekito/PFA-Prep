@@ -1,0 +1,161 @@
+timeline:
+  start_date: "2025-09-26"
+  weeks: 40
+  buffer_weeks:
+    run: 4
+    pushups: 2
+    situps: 2
+
+fitness:
+  baseline:
+    run_time: "36:00"        # Starting 2-mile run time
+    pushups: 9              # Current max pushups
+    situps: 13               # Current max situps
+
+  goals:
+    run_time: "22:00"        # Target 2-mile run time (excellent level)
+    pushups: 51              # Target pushups (excellent level)
+    situps: 52               # Target situps (excellent level)
+
+  pfa_standards:             # 35-39 age group male minimums from PDF
+    run_time: "20:44"        # Minimum passing time
+    pushups: 21              # Minimum passing pushups
+    situps: 34               # Minimum passing situps
+
+nutrition:
+  eating_window:
+    type: "time_restricted"
+    start_time: "11:00"
+    end_time: "19:00"
+
+  calorie_goals:
+    target: 2000             # Higher calorie needs for male
+
+  macros:                    # Percentage of daily calories
+    protein: 35              # 35% of calories from protein
+    carbs: 35                # 35% of calories from carbs
+    fat: 30                  # 30% of calories from fat
+
+  meal_timing:
+    pre_workout: "-30"        # Minutes before workout
+    post_workout: "+45"       # Minutes after workout
+    meals_per_day: 3          # Number of main meals
+    snacks_per_day: 2         # Number of snacks
+
+  dietary_preferences:
+    restrictions: ["none"]
+    allergies: []
+    dislikes: []
+
+supplements:
+  daily_stack:
+    - time: "06:00"
+      items:
+        - name: "Creatine"
+          dose: "5g"
+        - name: "Vitamin D3"
+          dose: "5000 IU"
+        - name: "Multivitamin"
+          dose: "1 tablet"
+    - time: "20:00"
+      items:
+        - name: "Omega-3"
+          dose: "1g EPA+DHA"
+        - name: "Magnesium"
+          dose: "400mg"
+
+  pre_workout:
+    enabled: true
+    timing: "-20"             # Minutes before workout
+    items:
+      - name: "Caffeine"
+        dose: "200mg"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Cordyceps"
+        dose: "1000mg"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Beta-Alanine"
+        dose: "3g"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "L-Citrulline"
+        dose: "6g"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Rhodiola Rosea"
+        dose: "300mg"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Tyrosine"
+        dose: "2g"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Taurine"
+        dose: "2g"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "Nitric Oxide Booster"
+        dose: "1 serving"
+        days: ["Mon", "Wed", "Fri"]
+      - name: "HMB"
+        dose: "3g"
+        days: ["Mon", "Wed", "Fri"]
+
+  post_workout:
+    enabled: true
+    timing: "+30"             # Minutes after workout
+    items:
+      - name: "Protein Powder"
+        dose: "11g"
+        condition: "if_no_meal_within_hour"
+
+training:
+  schedule:
+    workout_days: ["Mon", "Wed", "Fri"]
+    strength_days: ["Tue", "Thu"]
+    rest_days: ["Sat", "Sun"]
+
+  workout_times:
+    workout_days: "06:00"      # Main workout time (Mon/Wed/Fri)
+    strength_days: "18:00"     # Strength workout time (Tue/Thu)
+    easy_days: "07:00"         # Easy run time (Sat)
+
+  workout_types:
+    run_focused:
+      frequency: 3             # Times per week
+      progression_type: "time_based"
+      intensity_distribution:  # Percentage of workouts at each intensity
+        easy: 60               # 60% easy pace workouts
+        moderate: 25           # 25% moderate pace workouts
+        hard: 15               # 15% high intensity workouts
+
+    strength_focused:
+      frequency: 2             # Times per week
+      progression_type: "linear"
+      focus: ["pushups", "core", "functional"]
+
+progression:
+  adaptation_periods:          # Planned easier/deload weeks
+    frequency: 4               # Every 4th week is a deload week
+    reduction: 0.7             # 70% of normal workout volume
+
+calendar:
+  timezone: "America/Denver"
+  output_dir: "./outputs/calendars/"
+
+  separate_calendars:
+    workout:
+      name: "PFA_Workouts_Male39"
+      color: "blue"
+      location: "Base Gym"
+      default_duration: 75     # Minutes per workout
+      reminders: ["-15", "-5"] # Minutes before event
+
+    meals:
+      name: "PFA_Meals_Male39"
+      color: "green"
+      default_duration: 35     # Minutes per meal
+      reminders: ["-10"]       # Minutes before event
+
+    supplements:
+      name: "PFA_Supplements_Male39"
+      color: "orange"
+      default_duration: 5      # Minutes for supplement taking
+      reminders: ["-5"]        # Minutes before event
+
+  export_formats: ["ics"]

@@ -28,6 +28,7 @@ class FitnessProgressionCalculator:
         self.fitness_config = fitness_config
         self.timeline_weeks = timeline_weeks
         self.buffer_weeks = buffer_weeks
+        self._warned_run_goal = False
 
     def calculate_run_progression(self) -> List[str]:
         """Calculate weekly run time progression."""
@@ -39,9 +40,14 @@ class FitnessProgressionCalculator:
         goal_seconds = time_string_to_seconds(goal_str)
         standard_seconds = time_string_to_seconds(standard_str)
 
-        # Ensure goal meets or exceeds standards
+        # Ensure goal meets or exceeds standards (allow override for unrealistic but user-chosen goals)
         if goal_seconds > standard_seconds:
-            raise ValueError(f"Goal run time ({goal_str}) does not meet PFA standard ({standard_str})")
+            if not self._warned_run_goal:
+                print(f"WARNING: Goal run time ({goal_str}) does not meet PFA standard ({standard_str}). Using standard as calculation target.")
+                self._warned_run_goal = True
+            # Use the standard as the effective goal to prevent calculation errors
+            goal_seconds = standard_seconds
+            goal_str = standard_str
 
         # Calculate effective weeks (total weeks minus buffer)
         buffer = self.buffer_weeks.get('run', 0)
@@ -99,32 +105,12 @@ class FitnessProgressionCalculator:
 
         return progression
 
-    def calculate_plank_progression(self) -> List[str]:
-        """Calculate weekly plank progression."""
-        baseline_str = self.fitness_config['baseline']['plank']
-        goal_str = self.fitness_config['goals']['plank']
-
-        baseline_seconds = time_string_to_seconds(baseline_str)
-        goal_seconds = time_string_to_seconds(goal_str)
-
-        # Plank typically doesn't have buffer weeks, use full timeline
-        weekly_improvement = (goal_seconds - baseline_seconds) / self.timeline_weeks
-
-        progression = []
-        current_seconds = baseline_seconds
-
-        for week in range(self.timeline_weeks):
-            current_seconds += weekly_improvement
-            progression.append(seconds_to_time_string(int(round(current_seconds))))
-
-        return progression
 
     def get_weekly_targets(self, week: int) -> Dict[str, Any]:
         """Get fitness targets for a specific week."""
         run_progression = self.calculate_run_progression()
         pushup_progression = self.calculate_strength_progression('pushups')
         situp_progression = self.calculate_strength_progression('situps')
-        plank_progression = self.calculate_plank_progression()
 
         if week >= len(run_progression):
             week = len(run_progression) - 1
@@ -132,8 +118,7 @@ class FitnessProgressionCalculator:
         return {
             'run_time': run_progression[week],
             'pushups': pushup_progression[week],
-            'situps': situp_progression[week],
-            'plank': plank_progression[week]
+            'situps': situp_progression[week]
         }
 
     def validate_goals(self) -> Dict[str, bool]:
@@ -182,8 +167,7 @@ class FitnessProgressionCalculator:
             'progressions': {
                 'run_time': self.calculate_run_progression(),
                 'pushups': self.calculate_strength_progression('pushups'),
-                'situps': self.calculate_strength_progression('situps'),
-                'plank': self.calculate_plank_progression()
+                'situps': self.calculate_strength_progression('situps')
             }
         }
 

@@ -14,13 +14,11 @@ fitness:
     run_time: "18:00"          # Starting slower
     pushups: 10                # Lower starting point
     situps: 20
-    plank: "0:45"              # Shorter plank hold
 
   goals:
     run_time: "13:30"          # Modest but achievable improvement
     pushups: 40
     situps: 50
-    plank: "2:30"
 
   pfa_standards:               # Male 30-39 age group example
     run_time: "13:36"

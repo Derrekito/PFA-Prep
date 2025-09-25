@@ -42,12 +42,11 @@ class SupplementConfig:
 class TrainingConfig:
     schedule: Dict[str, List[str]]
     workout_types: Dict[str, Any]
+    workout_times: Dict[str, str]
 
 
 @dataclass
 class ProgressionConfig:
-    run_improvement: Dict[str, Any]
-    strength_improvement: Dict[str, Any]
     adaptation_periods: Dict[str, Any]
 
 
@@ -141,13 +140,12 @@ def load_config(config_path: str) -> PFAConfig:
     # Parse training configuration
     training = TrainingConfig(
         schedule=data['training']['schedule'],
-        workout_types=data['training']['workout_types']
+        workout_types=data['training']['workout_types'],
+        workout_times=data['training']['workout_times']
     )
 
     # Parse progression configuration
     progression = ProgressionConfig(
-        run_improvement=data['progression']['run_improvement'],
-        strength_improvement=data['progression']['strength_improvement'],
         adaptation_periods=data['progression']['adaptation_periods']
     )
 
@@ -187,14 +185,12 @@ def create_default_config() -> Dict[str, Any]:
             'baseline': {
                 'run_time': '15:30',
                 'pushups': 20,
-                'situps': 35,
-                'plank': '1:30'
+                'situps': 35
             },
             'goals': {
                 'run_time': '12:45',
                 'pushups': 50,
-                'situps': 55,
-                'plank': '3:00'
+                'situps': 55
             },
             'pfa_standards': {
                 'run_time': '13:36',
@@ -292,19 +288,6 @@ def create_default_config() -> Dict[str, Any]:
             }
         },
         'progression': {
-            'run_improvement': {
-                'method': 'linear_weekly',
-                'weekly_improvement': '0:05',
-                'plateau_handling': 'deload'
-            },
-            'strength_improvement': {
-                'method': 'linear_sets_reps',
-                'weekly_increase': {
-                    'pushups': 2,
-                    'situps': 3
-                },
-                'max_weekly_increase': 5
-            },
             'adaptation_periods': {
                 'frequency': 4,
                 'reduction': 0.7

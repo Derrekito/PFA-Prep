@@ -27,13 +27,11 @@ fitness:
     run_time: "15:30"        # Current 1.5 mile run time (MM:SS)
     pushups: 20              # Current max pushups in 1 minute
     situps: 35               # Current max situps in 1 minute
-    plank: "1:30"            # Current plank hold time (MM:SS)
 
   goals:
     run_time: "12:45"        # Target 1.5 mile run time
     pushups: 50              # Target max pushups
     situps: 55               # Target max situps
-    plank: "3:00"            # Target plank time
 
   pfa_standards:             # Age/gender specific minimums
     run_time: "13:36"        # Minimum passing time
