@@ -11,16 +11,44 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Check if venv exists
-if [ ! -d "venv" ]; then
-    echo -e "${RED}❌ Virtual environment not found!${NC}"
-    echo -e "${YELLOW}💡 Run './setup.sh' first to set up the environment${NC}"
-    exit 1
-fi
+# Setup virtual environment if it doesn't exist
+if [ ! -d "venvs/main" ]; then
+    echo -e "${BLUE}🚀 Setting up PFA Planning System for first time...${NC}"
 
-# Activate virtual environment
-echo -e "${BLUE}⚡ Activating virtual environment...${NC}"
-source venv/bin/activate
+    # Create venvs directory structure
+    mkdir -p venvs
+
+    # Create virtual environment
+    echo -e "${BLUE}📦 Creating main virtual environment at venvs/main/...${NC}"
+    python3 -m venv venvs/main
+
+    # Activate and setup environment
+    source venvs/main/bin/activate
+
+    # Upgrade pip
+    echo -e "${BLUE}📈 Upgrading pip...${NC}"
+    pip install --upgrade pip
+
+    # Install requirements
+    echo -e "${BLUE}📚 Installing dependencies...${NC}"
+    pip install pyyaml
+
+    # Make scripts executable
+    echo -e "${BLUE}🔧 Making scripts executable...${NC}"
+    chmod +x generate_pfa_plan.py
+    chmod +x run_pfa_plan.sh
+
+    echo -e "${GREEN}✅ Setup complete!${NC}"
+    echo ""
+    echo -e "${BLUE}📊 Virtual environments:${NC}"
+    echo -e "${BLUE}  Main app: venvs/main/${NC}"
+    echo -e "${BLUE}  Graph API: venvs/graph/ (created by ./scripts/run-graph.sh)${NC}"
+    echo ""
+else
+    # Activate existing virtual environment
+    echo -e "${BLUE}⚡ Activating virtual environment...${NC}"
+    source venvs/main/bin/activate
+fi
 
 # Check if Python script exists
 if [ ! -f "generate_pfa_plan.py" ]; then

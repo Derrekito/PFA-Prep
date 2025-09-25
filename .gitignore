@@ -1,3 +1,6 @@
 *.ics
 src/__pycache__/
 __pycache__/
+
+# Virtual environments
+venvs/

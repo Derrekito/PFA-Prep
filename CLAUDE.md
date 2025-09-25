@@ -217,10 +217,57 @@ calendar:
 
 ### Basic Usage
 ```bash
-python generate_pfa_plan.py my_plan.yml
+# Generate your plan (auto-setup on first run)
+./run_pfa_plan.sh my_plan.yml
 ```
 
-All configuration options (start date, weeks, formats, output directory, etc.) are specified in the YAML config file itself. No command-line arguments needed beyond the config file path.
+All configuration options (start date, weeks, formats, output directory, etc.) are specified in the YAML config file itself. The shell script handles virtual environment setup and activation automatically.
+
+## Shell Scripts
+
+### run_pfa_plan.sh
+All-in-one script that handles environment setup and plan generation:
+```bash
+./run_pfa_plan.sh [options] config_file.yml
+```
+- **First run**: Creates `venvs/main/` virtual environment and installs dependencies
+- **Subsequent runs**: Activates existing virtual environment
+- Calls `python generate_pfa_plan.py` with all passed arguments
+- Provides colored output and error handling
+- No separate setup step required
+
+## Development Workflow
+
+The project includes a knowledge graph system to help with development and code understanding:
+
+### 1. Graph Service Setup
+```bash
+# Ensure Neo4j is running on bolt://localhost:7687
+# Default credentials: neo4j/password
+
+# Start the graph API service (creates lightweight venv under venvs/graph/)
+./scripts/run-graph.sh
+```
+
+### 2. Populate Knowledge Graph
+```bash
+# Extract project structure and relationships into Neo4j
+python extract_graph.py
+```
+This script analyzes the codebase and creates nodes for:
+- Python modules and their relationships
+- Function definitions and dependencies
+- Configuration files and parameters
+
+### 3. Query Development Context
+```bash
+# Query the graph via REST API
+curl -X POST http://127.0.0.1:8000/graph/query \
+  -H 'Content-Type: application/json' \
+  -d '{"cypher":"MATCH (f:Function)-[:DEFINED_IN]->(m:Module) RETURN f.fqname, m.path LIMIT 5"}'
+```
+
+This development approach keeps investigations grounded in the current repository state and helps agents understand code relationships without loading unrelated files.
 
 ## File Structure
 ```
@@ -233,15 +280,27 @@ PFA_plan/
 │   └── personal/
 │       └── my_plan.yml
 ├── src/
-│   ├── fitness_calculator.py
-│   ├── nutrition_planner.py
-│   ├── supplement_scheduler.py
-│   ├── calendar_generator.py
-│   └── progression_engine.py
+│   ├── config_loader.py         # YAML configuration handling
+│   ├── fitness_calculator.py    # Progression calculations
+│   ├── nutrition_planner.py     # Meal planning and macros
+│   ├── supplement_scheduler.py  # Supplement timing optimization
+│   ├── calendar_generator.py    # ICS file generation
+│   └── progression_engine.py    # Workout programming
+├── scripts/
+│   └── run-graph.sh            # Graph service launcher
 ├── outputs/
 │   └── calendars/
 │       ├── PFA_Workouts.ics
 │       ├── PFA_Meals.ics
 │       └── PFA_Supplements.ics
-└── CLAUDE.md
+├── venvs/
+│   ├── main/                   # Main Python virtual environment
+│   └── graph/                  # Graph service virtual environment
+├── generate_pfa_plan.py        # Main Python script
+├── run_pfa_plan.sh            # All-in-one execution script
+├── extract_graph.py           # Knowledge graph extraction
+├── graph_api.py               # FastAPI graph service wrapper
+├── requirements.txt           # Python dependencies
+├── README.md                  # User documentation
+└── CLAUDE.md                  # Project specifications
 ```
