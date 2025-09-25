@@ -1,0 +1,160 @@
+# PFA Planning System - Advanced Template
+# For experienced athletes pushing for high scores
+
+timeline:
+  start_date: "2025-01-15"
+  weeks: 12                    # Shorter, more intense timeline
+  buffer_weeks:
+    run: 3                     # Confident in reaching goals
+    pushups: 1
+    situps: 1
+
+fitness:
+  baseline:
+    run_time: "13:45"          # Already in good shape
+    pushups: 45
+    situps: 55
+    plank: "2:30"
+
+  goals:
+    run_time: "11:30"          # Aggressive improvement goals
+    pushups: 75
+    situps: 80
+    plank: "4:00"
+
+  pfa_standards:               # Male 30-39 age group example
+    run_time: "13:36"
+    pushups: 33
+    situps: 42
+
+nutrition:
+  eating_window:
+    type: "time_restricted"
+    start_time: "07:00"        # Earlier eating window
+    end_time: "19:00"          # Tighter window
+
+  calorie_goals:
+    target: 2600               # Higher calorie needs
+
+  macros:
+    protein: 35                # Higher protein for muscle building
+    carbs: 35                  # Balanced carbs
+    fat: 30
+
+  meal_timing:
+    pre_workout: -20           # Closer to workout
+    post_workout: 30           # Quicker post-workout nutrition
+    meals_per_day: 4           # More frequent meals
+    snacks_per_day: 2
+
+  dietary_preferences:
+    restrictions: ["none"]
+    allergies: []
+    dislikes: []
+
+supplements:
+  daily_stack:
+    - time: "06:00"
+      items:
+        - name: "Creatine"
+          dose: "5g"
+        - name: "Beta-Alanine"
+          dose: "3g"
+        - name: "Vitamin D3"
+          dose: "4000 IU"        # Higher dose for athletes
+        - name: "B-Complex"
+          dose: "1 tablet"
+    - time: "14:00"
+      items:
+        - name: "Creatine"       # Split dosing
+          dose: "2g"
+    - time: "19:00"
+      items:
+        - name: "Omega-3"
+          dose: "2g EPA+DHA"     # Higher dose for recovery
+        - name: "Magnesium"
+          dose: "400mg"
+        - name: "Zinc"
+          dose: "15mg"
+
+  pre_workout:
+    enabled: true
+    timing: -20
+    items:
+      - name: "Caffeine"
+        dose: "200mg"           # Higher dose
+        days: ["Mon", "Wed", "Fri", "Tue", "Thu"]
+      - name: "Citrulline"
+        dose: "6g"
+
+  post_workout:
+    enabled: true
+    timing: 15                  # Immediate post-workout
+    items:
+      - name: "Whey Protein"
+        dose: "30g"
+      - name: "Creatine"
+        dose: "3g"
+
+training:
+  schedule:
+    workout_days: ["Mon", "Tue", "Wed", "Thu", "Fri"]  # 5 days training
+    strength_days: []           # Integrated strength
+    rest_days: ["Sat", "Sun"]
+
+  workout_types:
+    run_focused:
+      frequency: 4
+      progression_type: "pace_based"
+      intensity_distribution:
+        easy: 50               # Less easy, more quality work
+        moderate: 30
+        hard: 20               # More high-intensity work
+
+    strength_focused:
+      frequency: 3
+      progression_type: "periodized"
+      focus: ["pushups", "core", "power", "endurance"]
+
+progression:
+  run_improvement:
+    method: "step_function"     # Aggressive progression method
+    weekly_improvement: "0:03"  # Faster improvement
+    plateau_handling: "intensity_focus"
+
+  strength_improvement:
+    method: "undulating"        # More advanced periodization
+    weekly_increase:
+      pushups: 3               # Faster strength gains
+      situps: 4
+    max_weekly_increase: 7
+
+  adaptation_periods:
+    frequency: 6               # Less frequent deloads
+    reduction: 0.8             # Smaller volume reduction
+
+calendar:
+  timezone: "America/Denver"
+  output_dir: "./outputs/calendars/"
+
+  separate_calendars:
+    workout:
+      name: "PFA_Advanced_Workouts"
+      color: "red"             # Red for intensity
+      location: "Base Gym"
+      default_duration: 75     # Longer, more intense sessions
+      reminders: [-30, -10, -2]  # More reminders for important sessions
+
+    meals:
+      name: "PFA_Advanced_Meals"
+      color: "green"
+      default_duration: 25     # Quicker meals
+      reminders: [-5]
+
+    supplements:
+      name: "PFA_Advanced_Supplements"
+      color: "purple"
+      default_duration: 5
+      reminders: [-5, -1]      # More precise timing
+
+  export_formats: ["ics"]

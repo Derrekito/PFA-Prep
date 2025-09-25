@@ -1,0 +1,142 @@
+# PFA Planning System - Beginner Template
+# For those starting from a low fitness baseline
+
+timeline:
+  start_date: "2025-01-15"
+  weeks: 20                    # Longer timeline for gradual progression
+  buffer_weeks:
+    run: 6                     # More buffer time to reach goals safely
+    pushups: 3
+    situps: 3
+
+fitness:
+  baseline:
+    run_time: "18:00"          # Starting slower
+    pushups: 10                # Lower starting point
+    situps: 20
+    plank: "0:45"              # Shorter plank hold
+
+  goals:
+    run_time: "13:30"          # Modest but achievable improvement
+    pushups: 40
+    situps: 50
+    plank: "2:30"
+
+  pfa_standards:               # Male 30-39 age group example
+    run_time: "13:36"
+    pushups: 33
+    situps: 42
+
+nutrition:
+  eating_window:
+    type: "normal"             # Regular eating schedule for beginners
+    start_time: "07:00"
+    end_time: "21:00"
+
+  calorie_goals:
+    target: 1800               # Conservative calorie target
+
+  macros:
+    protein: 25                # Slightly lower protein for beginners
+    carbs: 45                  # Higher carbs for energy
+    fat: 30
+
+  meal_timing:
+    pre_workout: -45           # More time before workout
+    post_workout: 60           # Allow more time for meal after
+    meals_per_day: 3
+    snacks_per_day: 2
+
+  dietary_preferences:
+    restrictions: ["none"]
+    allergies: []
+    dislikes: []
+
+supplements:
+  daily_stack:
+    - time: "07:00"
+      items:
+        - name: "Multivitamin"
+          dose: "1 tablet"
+        - name: "Vitamin D3"
+          dose: "1000 IU"        # Conservative dose
+    - time: "19:00"
+      items:
+        - name: "Omega-3"
+          dose: "500mg EPA+DHA"  # Lower dose to start
+
+  pre_workout:
+    enabled: false             # No pre-workout stimulants for beginners
+    timing: -15
+    items: []
+
+  post_workout:
+    enabled: true
+    timing: 45
+    items:
+      - name: "Protein Powder"
+        dose: "20g"            # Smaller serving
+        condition: "if_no_meal_within_hour"
+
+training:
+  schedule:
+    workout_days: ["Mon", "Wed", "Fri"]
+    strength_days: ["Tue", "Thu"]
+    rest_days: ["Sat", "Sun"]
+
+  workout_types:
+    run_focused:
+      frequency: 3
+      progression_type: "time_based"
+      intensity_distribution:
+        easy: 70               # More easy workouts for beginners
+        moderate: 25
+        hard: 5                # Minimal hard sessions
+
+    strength_focused:
+      frequency: 2
+      progression_type: "linear"
+      focus: ["pushups", "core", "functional"]
+
+progression:
+  run_improvement:
+    method: "linear_weekly"
+    weekly_improvement: "0:08"  # Slower improvement rate
+    plateau_handling: "deload"
+
+  strength_improvement:
+    method: "linear_sets_reps"
+    weekly_increase:
+      pushups: 1               # Slower strength progression
+      situps: 2
+    max_weekly_increase: 3
+
+  adaptation_periods:
+    frequency: 3               # More frequent easy weeks
+    reduction: 0.6             # Greater volume reduction
+
+calendar:
+  timezone: "America/Denver"
+  output_dir: "./outputs/calendars/"
+
+  separate_calendars:
+    workout:
+      name: "PFA_Beginner_Workouts"
+      color: "blue"
+      location: "Base Gym"
+      default_duration: 45     # Shorter sessions for beginners
+      reminders: [-20, -10]    # More advance warning
+
+    meals:
+      name: "PFA_Beginner_Meals"
+      color: "green"
+      default_duration: 30
+      reminders: [-15]
+
+    supplements:
+      name: "PFA_Beginner_Supplements"
+      color: "orange"
+      default_duration: 5
+      reminders: [-10]
+
+  export_formats: ["ics"]

@@ -1,0 +1,149 @@
+# PFA Planning System - Intermediate Template
+# For those with some fitness experience
+
+timeline:
+  start_date: "2025-01-15"
+  weeks: 16                    # Standard timeline
+  buffer_weeks:
+    run: 4
+    pushups: 2
+    situps: 2
+
+fitness:
+  baseline:
+    run_time: "15:30"
+    pushups: 25
+    situps: 35
+    plank: "1:30"
+
+  goals:
+    run_time: "12:45"
+    pushups: 55
+    situps: 60
+    plank: "3:00"
+
+  pfa_standards:               # Male 30-39 age group example
+    run_time: "13:36"
+    pushups: 33
+    situps: 42
+
+nutrition:
+  eating_window:
+    type: "time_restricted"
+    start_time: "08:00"
+    end_time: "20:00"
+
+  calorie_goals:
+    target: 2200
+
+  macros:
+    protein: 30
+    carbs: 40
+    fat: 30
+
+  meal_timing:
+    pre_workout: -30
+    post_workout: 45
+    meals_per_day: 3
+    snacks_per_day: 2
+
+  dietary_preferences:
+    restrictions: ["none"]
+    allergies: []
+    dislikes: []
+
+supplements:
+  daily_stack:
+    - time: "06:30"
+      items:
+        - name: "Creatine"
+          dose: "5g"
+        - name: "Vitamin D3"
+          dose: "2000 IU"
+        - name: "Multivitamin"
+          dose: "1 tablet"
+    - time: "18:00"
+      items:
+        - name: "Omega-3"
+          dose: "1g EPA+DHA"
+        - name: "Magnesium"
+          dose: "300mg"
+
+  pre_workout:
+    enabled: true
+    timing: -15
+    items:
+      - name: "Caffeine"
+        dose: "150mg"
+        days: ["Mon", "Wed", "Fri"]
+
+  post_workout:
+    enabled: true
+    timing: 30
+    items:
+      - name: "Protein Powder"
+        dose: "25g"
+        condition: "if_no_meal_within_hour"
+
+training:
+  schedule:
+    workout_days: ["Mon", "Wed", "Fri"]
+    strength_days: ["Tue", "Thu"]
+    rest_days: ["Sat", "Sun"]
+
+  workout_types:
+    run_focused:
+      frequency: 3
+      progression_type: "time_based"
+      intensity_distribution:
+        easy: 60
+        moderate: 30
+        hard: 10
+
+    strength_focused:
+      frequency: 2
+      progression_type: "linear"
+      focus: ["pushups", "core", "functional"]
+
+progression:
+  run_improvement:
+    method: "linear_weekly"
+    weekly_improvement: "0:05"
+    plateau_handling: "deload"
+
+  strength_improvement:
+    method: "linear_sets_reps"
+    weekly_increase:
+      pushups: 2
+      situps: 3
+    max_weekly_increase: 5
+
+  adaptation_periods:
+    frequency: 4
+    reduction: 0.7
+
+calendar:
+  timezone: "America/Denver"
+  output_dir: "./outputs/calendars/"
+
+  separate_calendars:
+    workout:
+      name: "PFA_Intermediate_Workouts"
+      color: "blue"
+      location: "Base Gym"
+      default_duration: 60
+      reminders: [-15, -5]
+
+    meals:
+      name: "PFA_Intermediate_Meals"
+      color: "green"
+      default_duration: 30
+      reminders: [-10]
+
+    supplements:
+      name: "PFA_Intermediate_Supplements"
+      color: "orange"
+      default_duration: 5
+      reminders: [-5]
+
+  export_formats: ["ics"]
