@@ -37,20 +37,44 @@ nano configs/personal/my_plan.yml
 ./run_pfa_plan.sh configs/templates/advanced.yml
 ```
 
+## 🛠️ Development Workflow
+
+1. **Bootstrap tooling**
+   - Run `./setup.sh` to create the main virtualenv.
+   - Ensure Neo4j is available on `bolt://localhost:7687` with credentials `neo4j/password` (a local Docker container works well).
+2. **Start the graph service**
+   - In a dedicated terminal, execute `./scripts/run-graph.sh` to launch the FastAPI wrapper (`graph_api.py`). The first run creates a lightweight venv under `venvs/graph/`.
+3. **Populate the knowledge graph**
+   - From the project root, run `python extract_graph.py` whenever configs or `src/` modules change. This script walks the repo and syncs module/function/config nodes into Neo4j.
+4. **Query the graph during development**
+   - Use any HTTP client to hit `POST http://127.0.0.1:8000/graph/query` with JSON like:
+     ```bash
+     curl -X POST http://127.0.0.1:8000/graph/query \
+       -H 'Content-Type: application/json' \
+       -d '{"cypher":"MATCH (f:Function)-[:DEFINED_IN]->(m:Module) RETURN f.fqname, m.path LIMIT 5"}'
+     ```
+   - This keeps investigations grounded in the current repo state and avoids loading unrelated files.
+5. **Sanity-check the API**
+   - Confirm the service is responding with a lightweight query, e.g.:
+     ```bash
+     curl -s -X POST http://127.0.0.1:8000/graph/query \
+       -H 'Content-Type: application/json' \
+       -d '{"cypher":"MATCH (n) RETURN count(n) AS nodes"}'
+     ```
+   - A JSON response like `[{"nodes":373}]` indicates the graph is populated and reachable locally.
+6. **Regenerate plans** as usual with `./run_pfa_plan.sh <config>` after making code/config changes, then import the refreshed calendars.
+
 ## 📋 What You Get
 
 The system generates:
 
 ### 📅 Calendar Files (ICS format)
-- **Workout Calendar**: Progressive training with detailed descriptions
+- **Workout Calendar**: Progressive training with detailed descriptions including weekly targets
 - **Meals Calendar**: Time-optimized nutrition with macro targets
 - **Supplements Calendar**: Timing-optimized supplement schedule
 - **Combined Calendar**: All events in one file
 
-### 📊 Progress Reports
-- **Fitness Progression**: Week-by-week targets for run time, push-ups, sit-ups, plank
-- **Program Validation**: Intensity distribution analysis and recommendations
-- **Meal Plans**: Complete weekly meal plans with macro breakdowns
+> ℹ️ Progress insights are embedded directly in calendar event descriptions—the standalone `progress_reports/` outputs have been retired.
 
 ## 🎯 Features
 
@@ -160,11 +184,6 @@ outputs/
 │   ├── PFA_Meals.ics              # Meal timing and options
 │   ├── PFA_Supplements.ics        # Supplement schedule
 │   └── PFA_Complete_Plan.ics      # All events combined
-├── progress_reports/
-│   ├── fitness_progression.yaml    # Weekly targets
-│   └── program_validation.yaml    # Program analysis
-└── meal_plans/
-    └── weekly_meal_plans.yaml     # Detailed meal planning
 ```
 
 ## 🎛️ Customization Options
