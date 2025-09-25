@@ -109,15 +109,17 @@ def generate_plan(config_path: str):
         config.progression.__dict__,
         fitness_calculator
     )
+    calendar_config = {
+        'separate_calendars': config.calendar.separate_calendars,
+        'output_dir': config.calendar.output_dir,
+        'export_formats': config.calendar.export_formats
+    }
     calendar_generator = CalendarGenerator(
-        config.calendar.separate_calendars,
+        calendar_config,
         config.calendar.timezone
     )
 
     # Generate all components
-    print("  - Calculating fitness progressions...")
-    fitness_report = fitness_calculator.generate_progression_report()
-
     print("  - Creating workout programs...")
     workout_program = progression_engine.generate_full_program(config.timeline.weeks)
 
@@ -151,28 +153,7 @@ def generate_plan(config_path: str):
         config.timeline.weeks
     )
 
-    # Save additional reports
-    output_dir = Path(config.calendar.output_dir).parent
-    reports_dir = output_dir / 'progress_reports'
-    reports_dir.mkdir(parents=True, exist_ok=True)
-
-    # Save fitness progression report
-    fitness_report_path = reports_dir / 'fitness_progression.yaml'
-    with open(fitness_report_path, 'w') as f:
-        yaml.dump(fitness_report, f, default_flow_style=False)
-
-    # Save program validation report
-    program_validation = progression_engine.validate_program_balance(config.timeline.weeks)
-    validation_report_path = reports_dir / 'program_validation.yaml'
-    with open(validation_report_path, 'w') as f:
-        yaml.dump(program_validation, f, default_flow_style=False)
-
-    # Save meal plans
-    meal_plans_dir = output_dir / 'meal_plans'
-    meal_plans_dir.mkdir(parents=True, exist_ok=True)
-    meal_plans_path = meal_plans_dir / 'weekly_meal_plans.yaml'
-    with open(meal_plans_path, 'w') as f:
-        yaml.dump(meal_plans, f, default_flow_style=False)
+    # Everything goes into the calendar files - no separate meal plan files needed
 
     # Print summary
     print(f"\n✅ PFA Plan Generated Successfully!")
@@ -188,24 +169,15 @@ def generate_plan(config_path: str):
     macros = nutrition_planner.calculate_macro_grams()
     print(f"  Macros: {macros['protein']}g protein, {macros['carbs']}g carbs, {macros['fat']}g fat")
 
-    print(f"\nFiles Generated:")
+    print(f"\nCalendar Files Generated:")
     for calendar_type, file_path in calendar_files.items():
         print(f"  📅 {calendar_type.title()}: {file_path}")
 
-    print(f"  📊 Fitness Report: {fitness_report_path}")
-    print(f"  📊 Program Validation: {validation_report_path}")
-    print(f"  🍽️ Meal Plans: {meal_plans_path}")
-
     print(f"\n🎯 Next Steps:")
     print(f"  1. Import calendar files into your calendar app")
-    print(f"  2. Review meal plans and prep ingredients")
+    print(f"  2. Follow meal plans from calendar events")
     print(f"  3. Set up supplement schedule")
     print(f"  4. Track progress weekly")
-
-    if program_validation['recommendations']:
-        print(f"\n⚠️ Program Recommendations:")
-        for rec in program_validation['recommendations'][:3]:  # Show first 3
-            print(f"  • {rec}")
 
     return True
 

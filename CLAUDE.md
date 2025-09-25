@@ -239,11 +239,9 @@ PFA_plan/
 │   ├── calendar_generator.py
 │   └── progression_engine.py
 ├── outputs/
-│   ├── calendars/
-│   │   ├── PFA_Workouts.ics
-│   │   ├── PFA_Meals.ics
-│   │   └── PFA_Supplements.ics
-│   ├── meal_plans/
-│   └── progress_reports/
+│   └── calendars/
+│       ├── PFA_Workouts.ics
+│       ├── PFA_Meals.ics
+│       └── PFA_Supplements.ics
 └── CLAUDE.md
 ```
