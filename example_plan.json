@@ -1,0 +1,177 @@
+{
+  "calendar_name": "PT_Diet_Schedule",
+  "timezone": "America/Denver",
+  "start_date": "2025-09-26",
+  "weeks": 26,
+  "default_duration_minutes": 60,
+  "events": [
+    {
+      "type": "workout",
+      "name": "Run Intervals",
+      "day_of_week": "Mon",
+      "time": "07:00",
+      "progression": [
+        "6×200m @ 12:00/mi, 2:00 rest + Push-ups 4×max-3",
+        "6×200m @ 11:45/mi, 2:00 rest + Push-ups 4×7",
+        "8×200m @ 11:30/mi, 1:45 rest + Push-ups 4×8",
+        "8×200m @ 11:15/mi, 1:45 rest + Push-ups 4×9"
+      ]
+    },
+    {
+      "type": "workout",
+      "name": "Tempo Run",
+      "day_of_week": "Wed",
+      "time": "07:00",
+      "progression": [
+        "1.5 mi jog/walk (3 jog / 1 walk) + core: reverse crunch 3×12–15, side plank 3×30–60s",
+        "1.75 mi jog/walk + core",
+        "2.0 mi jog/walk + core",
+        "2.0 mi continuous jog (slow) + core"
+      ]
+    },
+    {
+      "type": "workout",
+      "name": "PFA Circuit",
+      "day_of_week": "Fri",
+      "time": "07:00",
+      "progression": [
+        "400m jog @ 12:00 pace + 10 push-ups + 15 sit-ups → 90s rest ×3",
+        "400m jog + 12 push-ups + 18 sit-ups ×3",
+        "400m jog + 14 push-ups + 20 sit-ups ×4",
+        "400m jog + 15 push-ups + 22 sit-ups ×4"
+      ]
+    },
+    {
+      "type": "workout",
+      "name": "Strength/Core – Tue",
+      "day_of_week": "Tue",
+      "time": "18:00",
+      "linear_progression": {
+        "start": 6,
+        "target": 20,
+        "weeks": 4,
+        "format": "Push-ups {value} reps × 4 sets; Sit-ups 3×15–20 → 3×40+; Plank 3×45s → 3×3:00; Squats 3×12; Lunges 3×10/leg"
+      }
+    },
+    {
+      "type": "workout",
+      "name": "Strength/Core – Thu",
+      "day_of_week": "Thu",
+      "time": "18:00",
+      "linear_progression": {
+        "start": 6,
+        "target": 20,
+        "weeks": 4,
+        "format": "Push-ups {value} reps × 5 sub-max sets; Dips 3×10; Glute bridge 3×12–15; Sit-ups/Plank mix"
+      }
+    },
+    {
+      "type": "workout",
+      "name": "Easy Run",
+      "day_of_week": "Sat",
+      "time": "08:00",
+      "progression": [
+        "1.5 mi brisk walk",
+        "1.75 mi brisk walk",
+        "2.0 mi brisk walk",
+        "2.0 mi jog/walk"
+      ]
+    },
+    {
+      "type": "meal",
+      "name": "Breakfast Options",
+      "day_of_week": "Daily",
+      "time": "08:15",
+      "options": {
+        "breakfast": [
+          "Oats + berries + bariatric protein shake",
+          "Scrambled eggs + spinach",
+          "Omelet with peppers/mushrooms",
+          "Toast + peanut butter + banana",
+          "Egg whites + avocado slices"
+        ]
+      }
+    },
+    {
+      "type": "meal",
+      "name": "Lunch Options",
+      "day_of_week": "Daily",
+      "time": "12:15",
+      "options": {
+        "lunch": [
+          "Chicken + rice bowl with vegetables",
+          "Turkey sandwich (whole grain bread)",
+          "Turkey lettuce wraps with cucumber + tomato",
+          "Chicken & vegetable soup",
+          "Beef + quinoa + salad",
+          "Beef chili (lean ground beef + beans/veg)"
+        ]
+      }
+    },
+    {
+      "type": "meal",
+      "name": "Dinner Options",
+      "day_of_week": "Daily",
+      "time": "18:30",
+      "options": {
+        "dinner": [
+          "Roast chicken + sweet potato + broccoli",
+          "Ground beef stir-fry + rice + vegetables",
+          "Turkey burger (lettuce wrap bun) + roasted vegetables",
+          "Beef meatballs + cauliflower mash",
+          "Grilled chicken + asparagus",
+          "Occasional fish sticks + baked sweet potato fries"
+        ]
+      }
+    },
+    {
+      "type": "meal",
+      "name": "Snack Options",
+      "day_of_week": "Daily",
+      "time": "15:00",
+      "options": {
+        "snacks": [
+          "Bariatric protein shake (20–30 g)",
+          "Greek yogurt + fruit",
+          "String cheese + cucumbers",
+          "Hard-boiled eggs",
+          "Almonds or walnuts",
+          "Apple + nut butter",
+          "Celery + nut butter"
+        ]
+      }
+    },
+    {
+      "type": "supplement",
+      "name": "Daily Stack",
+      "day_of_week": "Daily",
+      "time": "06:30",
+      "details": [
+        "Creatine 5 g",
+        "Cordyceps 1–2 g",
+        "Lion’s Mane 1 g",
+        "Omega-3 1 g EPA+DHA",
+        "Vitamin D3 2000 IU",
+        "Multivitamin"
+      ]
+    },
+    {
+      "type": "supplement",
+      "name": "Training-Day – Caffeine",
+      "day_of_week": "Mon,Wed,Fri",
+      "time": "06:45",
+      "details": [
+        "Caffeine 150 mg pre-session"
+      ]
+    },
+    {
+      "type": "supplement",
+      "name": "Training-Day – Collagen + Vit C",
+      "day_of_week": "Tue,Thu,Fri",
+      "time": "17:30",
+      "details": [
+        "Collagen 10 g + Vitamin C 50 mg (30–60 min pre loading session)"
+      ]
+    }
+  ]
+}

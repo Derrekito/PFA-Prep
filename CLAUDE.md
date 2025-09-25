@@ -1,0 +1,249 @@
+# PFA Planning System
+
+## Overview
+This system generates a comprehensive Physical Fitness Assessment (PFA) training plan using configurable parameters to create calendar entries for workouts, meals, and supplements. The system supports progressive training, flexible meal planning, and customizable eating windows.
+
+## Configuration Format
+**Recommendation: Migrate from JSON to YAML** for better readability and comments support.
+
+## Core Parameters
+
+
+### Timeline & Goals
+```yaml
+timeline:
+  start_date: "2025-01-15"
+  weeks: 16                  # Total training weeks
+  buffer_weeks:              # How many weeks before PFA test to hit goals
+    run: 4                   # Be at goal run time 4 weeks early
+    pushups: 2               # Be at goal pushups 2 weeks early
+    situps: 2                # Be at goal situps 2 weeks early
+```
+
+### Fitness Baselines & Goals
+```yaml
+fitness:
+  baseline:
+    run_time: "15:30"        # Current 1.5 mile run time (MM:SS)
+    pushups: 20              # Current max pushups in 1 minute
+    situps: 35               # Current max situps in 1 minute
+    plank: "1:30"            # Current plank hold time (MM:SS)
+
+  goals:
+    run_time: "12:45"        # Target 1.5 mile run time
+    pushups: 50              # Target max pushups
+    situps: 55               # Target max situps
+    plank: "3:00"            # Target plank time
+
+  pfa_standards:             # Age/gender specific minimums
+    run_time: "13:36"        # Minimum passing time
+    pushups: 33              # Minimum passing pushups
+    situps: 42               # Minimum passing situps
+```
+
+### Nutrition Parameters
+```yaml
+nutrition:
+  eating_window:
+    type: "time_restricted"   # "normal" or "time_restricted"
+    start_time: "08:00"       # First meal time
+    end_time: "20:00"         # Last meal time
+
+  calorie_goals:
+    target: 2000              # Daily calorie target (manually set)
+
+  macros:                     # Percentages (should sum to 100)
+    protein: 30
+    carbs: 40
+    fat: 30
+
+  meal_timing:
+    pre_workout: "-30"        # Minutes before workout
+    post_workout: "+45"       # Minutes after workout
+    meals_per_day: 3          # Main meals
+    snacks_per_day: 2         # Additional snacks
+
+  dietary_preferences:
+    restrictions: ["none"]    # "vegetarian", "vegan", "keto", "paleo", etc.
+    allergies: []             # Food allergies/intolerances
+    dislikes: []              # Foods to avoid
+```
+
+### Supplement Protocol
+```yaml
+supplements:
+  daily_stack:
+    - time: "06:30"
+      items:
+        - name: "Creatine"
+          dose: "5g"
+        - name: "Vitamin D3"
+          dose: "2000 IU"
+    - time: "18:00"
+      items:
+        - name: "Omega-3"
+          dose: "1g EPA+DHA"
+        - name: "Magnesium"
+          dose: "400mg"
+
+  pre_workout:
+    enabled: true
+    timing: "-15"             # Minutes before workout
+    items:
+      - name: "Caffeine"
+        dose: "150mg"
+        days: ["Mon", "Wed", "Fri"]  # Training days only
+
+  post_workout:
+    enabled: true
+    timing: "+30"             # Minutes after workout
+    items:
+      - name: "Protein Powder"
+        dose: "25g"
+        condition: "if_no_meal_within_hour"
+```
+
+### Training Schedule
+```yaml
+training:
+  schedule:
+    workout_days: ["Mon", "Wed", "Fri"]  # Primary training days
+    strength_days: ["Tue", "Thu"]        # Strength/accessory days
+    rest_days: ["Sat", "Sun"]            # Complete rest or active recovery
+
+  workout_types:
+    run_focused:
+      frequency: 3             # Times per week
+      progression_type: "time_based"  # "time_based", "distance_based", "pace_based"
+      intensity_distribution:  # Percentage of workouts at each intensity
+        easy: 60
+        moderate: 30
+        hard: 10
+
+    strength_focused:
+      frequency: 2
+      progression_type: "linear"  # "linear", "periodized", "undulating"
+      focus: ["pushups", "core", "functional"]
+```
+
+### Progression Algorithms
+```yaml
+progression:
+  run_improvement:
+    method: "linear_weekly"    # "linear_weekly", "step_function", "exponential"
+    weekly_improvement: "0:05" # Seconds per week improvement
+    plateau_handling: "deload" # "deload", "maintain", "intensity_focus"
+
+  strength_improvement:
+    method: "linear_sets_reps"
+    weekly_increase:
+      pushups: 2               # Reps per week
+      situps: 3                # Reps per week
+    max_weekly_increase: 5     # Cap on weekly increases
+
+  adaptation_periods:          # Planned easier weeks
+    frequency: 4               # Every 4th week
+    reduction: 0.7             # 70% of normal volume
+```
+
+### Calendar Generation
+```yaml
+calendar:
+  timezone: "America/Denver"
+  output_dir: "./outputs/calendars/"  # Where to save calendar files
+
+  separate_calendars:        # Generate separate calendar files
+    workout:
+      name: "PFA_Workouts"
+      color: "blue"
+      location: "Base Gym"
+      default_duration: 60
+      reminders: ["-15", "-5"]  # Minutes before
+
+    meals:
+      name: "PFA_Meals"
+      color: "green"
+      default_duration: 30
+      reminders: ["-10"]
+
+    supplements:
+      name: "PFA_Supplements"
+      color: "orange"
+      default_duration: 5
+      reminders: ["-5"]
+
+  export_formats: ["ics"]  # Supported output formats
+```
+
+## System Functions
+
+### 1. Fitness Progression Calculator
+- **Linear Progression**: Calculates weekly improvements based on baseline→goal over specified weeks
+- **Buffer Integration**: Adjusts timeline to meet goals X weeks before test date
+- **Plateau Detection**: Identifies when progress stalls and suggests modifications
+- **Standards Validation**: Ensures goals meet or exceed PFA minimums
+
+### 2. Calorie & Macro Calculator
+- **Manual Calorie Setting**: Uses user-specified daily calorie target
+- **Macro Distribution**: Converts percentages to gram targets based on calorie goal
+
+### 3. Meal Plan Generator
+- **Time-Restricted Eating**: Respects eating windows (e.g., 8am-8pm)
+- **Workout Timing**: Plans pre/post workout nutrition
+- **Variety Engine**: Rotates meal options to prevent monotony
+- **Prep-Friendly**: Groups similar ingredients and prep methods
+- **Macro Targets**: Ensures daily meals hit calorie/macro goals
+
+### 4. Supplement Scheduler
+- **Timing Optimization**: Schedules supplements for maximum efficacy
+- **Interaction Awareness**: Prevents conflicting supplement timing
+- **Training Day Logic**: Different stacks for training vs. rest days
+- **Reminder Integration**: Calendar alerts for supplement times
+
+### 5. Workout Progression Engine
+- **Auto-Scaling**: Adjusts workout intensity based on progress
+- **Periodization**: Incorporates easy/hard week cycles
+- **Component Balancing**: Ensures all PFA elements get adequate attention
+- **Recovery Integration**: Schedules rest days and deload weeks
+
+### 6. Calendar Integration
+- **ICS Export**: Generates .ics calendar files
+- **Separate Calendar Files**: Generates distinct .ics files for workouts, meals, and supplements
+- **Smart Scheduling**: Avoids conflicts and optimizes timing
+- **Progress Tracking**: Includes fields for logging actual performance
+- **Flexibility**: Easy to modify individual events without rebuilding
+
+## Usage Examples
+
+### Basic Usage
+```bash
+python generate_pfa_plan.py my_plan.yml
+```
+
+All configuration options (start date, weeks, formats, output directory, etc.) are specified in the YAML config file itself. No command-line arguments needed beyond the config file path.
+
+## File Structure
+```
+PFA_plan/
+├── configs/
+│   ├── templates/
+│   │   ├── beginner.yml
+│   │   ├── intermediate.yml
+│   │   └── advanced.yml
+│   └── personal/
+│       └── my_plan.yml
+├── src/
+│   ├── fitness_calculator.py
+│   ├── nutrition_planner.py
+│   ├── supplement_scheduler.py
+│   ├── calendar_generator.py
+│   └── progression_engine.py
+├── outputs/
+│   ├── calendars/
+│   │   ├── PFA_Workouts.ics
+│   │   ├── PFA_Meals.ics
+│   │   └── PFA_Supplements.ics
+│   ├── meal_plans/
+│   └── progress_reports/
+└── CLAUDE.md
+```
