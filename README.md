@@ -16,7 +16,7 @@ cd PFA_plan
 ### 2. Generate Your Plan
 ```bash
 # Create a personal config from template
-./run_pfa_plan.sh --template configs/personal/my_plan.yml
+cp configs/templates/intermediate.yml configs/personal/my_plan.yml
 
 # Edit the config with your parameters
 nano configs/personal/my_plan.yml
@@ -166,7 +166,7 @@ nutrition:
 ### Custom Configuration
 ```bash
 # Create template
-./run_pfa_plan.sh --template my_custom_plan.yml
+cp configs/templates/intermediate.yml my_custom_plan.yml
 
 # Edit parameters
 nano my_custom_plan.yml
