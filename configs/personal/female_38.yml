@@ -39,13 +39,49 @@ nutrition:
   meal_timing:
     pre_workout: "-30"        # Minutes before workout
     post_workout: "+30"       # Minutes after workout
-    meals_per_day: 3          # Number of main meals
-    snacks_per_day: 2         # Number of snacks
+
+    # Day-specific meal configuration
+    weekdays:
+      meals_per_day: 2        # 2 meals on weekdays
+      snacks_per_day: 1       # 1 snack on weekdays
+    weekends:
+      meals_per_day: 3        # 3 meals on weekends
+      snacks_per_day: 1       # 1 snack on weekends
+
+    # Manual meal schedule (overrides automatic calculation)
+    manual_schedule:
+      # Weekday meals (2 meals: breakfast + dinner)
+      - name: "breakfast"
+        time: "11:30"         # Default time
+        days: ["Tue", "Wed", "Thu", "Fri"]
+      - name: "breakfast"
+        time: "11:30"         # Earlier on Monday
+        days: ["Mon"]
+      - name: "dinner"
+        time: "18:00"         # Default time
+        days: ["Mon", "Tue", "Wed", "Thu", "Fri"]
+
+      # Weekend meals (3 meals: breakfast + lunch + dinner)
+      - name: "breakfast"      # Weekend breakfast
+        time: "09:00"
+        days: ["Sat", "Sun"]
+      - name: "lunch"          # Weekend lunch
+        time: "13:00"
+        days: ["Sat", "Sun"]
+      - name: "dinner"         # Weekend dinner
+        time: "18:00"
+        days: ["Sat", "Sun"]
+
+      # Snacks for all days
+      - name: "snack"
+        time: "14:30"
+        days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
   dietary_preferences:
     restrictions: ["none"]
     allergies: []
     dislikes: []
+
 
 supplements:
   daily_stack:
@@ -138,20 +174,20 @@ calendar:
 
   separate_calendars:
     workout:
-      name: "PFA_Workouts_Female38"
+      name: "PFA_Workouts"
       color: "purple"
-      location: "Base Gym"
+      location: "Base Gym/Home/Hardin"
       default_duration: 60     # Minutes per workout
       reminders: ["-15", "-5"] # Minutes before event
 
     meals:
-      name: "PFA_Meals_Female38"
+      name: "PFA_Meals"
       color: "pink"
       default_duration: 30     # Minutes per meal
       reminders: ["-10"]       # Minutes before event
 
     supplements:
-      name: "PFA_Supplements_Female38"
+      name: "PFA_Supplements_Jenn"
       color: "coral"
       default_duration: 5      # Minutes for supplement taking
       reminders: ["-5"]        # Minutes before event

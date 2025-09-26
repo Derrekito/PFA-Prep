@@ -29,6 +29,8 @@ class NutritionConfig:
     macros: Dict[str, int]
     meal_timing: Dict[str, Any]
     dietary_preferences: Dict[str, List[str]]
+    meal_database: Optional[Dict[str, Any]] = None
+    meal_generation: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -89,6 +91,28 @@ def validate_percentages(macros: Dict[str, int]) -> bool:
     return sum(macros.values()) == 100
 
 
+def load_meal_database(base_config_path: str) -> Dict[str, Any]:
+    """Load meal database from separate file."""
+    config_path = Path(base_config_path)
+
+    # Try multiple locations for the meal database
+    possible_paths = [
+        # Same directory as config
+        config_path.parent / "meal_database.yml",
+        # Up one level from personal/ to configs/
+        config_path.parent.parent / "meal_database.yml",
+        # Project root configs directory
+        config_path.parent.parent.parent / "configs" / "meal_database.yml"
+    ]
+
+    for meal_db_path in possible_paths:
+        if meal_db_path.exists():
+            with open(meal_db_path, 'r') as f:
+                return yaml.safe_load(f)
+
+    return {}
+
+
 def load_config(config_path: str) -> PFAConfig:
     """Load and validate YAML configuration."""
     config_path = Path(config_path)
@@ -98,6 +122,16 @@ def load_config(config_path: str) -> PFAConfig:
 
     with open(config_path, 'r') as f:
         data = yaml.safe_load(f)
+
+    # Load meal database if available
+    meal_database = load_meal_database(str(config_path))
+    if meal_database:
+        # Merge meal database into nutrition config
+        if 'nutrition' not in data:
+            data['nutrition'] = {}
+        data['nutrition']['meal_database'] = meal_database
+        if 'meal_generation' in meal_database:
+            data['nutrition']['meal_generation'] = meal_database['meal_generation']
 
     # Parse timeline
     timeline_data = data['timeline']
@@ -122,7 +156,9 @@ def load_config(config_path: str) -> PFAConfig:
         calorie_goals=nutrition_data['calorie_goals'],
         macros=nutrition_data['macros'],
         meal_timing=nutrition_data['meal_timing'],
-        dietary_preferences=nutrition_data['dietary_preferences']
+        dietary_preferences=nutrition_data['dietary_preferences'],
+        meal_database=nutrition_data.get('meal_database'),
+        meal_generation=nutrition_data.get('meal_generation')
     )
 
     # Validate macros sum to 100%

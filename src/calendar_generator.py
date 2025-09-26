@@ -8,6 +8,7 @@ from datetime import datetime, date, time, timedelta, UTC
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
+from time_utils import parse_time_string
 
 
 class CalendarGenerator:
@@ -24,11 +25,13 @@ class CalendarGenerator:
 
     def _parse_time(self, time_str: str) -> time:
         """Parse time string in HH:MM format."""
-        return datetime.strptime(time_str, "%H:%M").time()
+        return parse_time_string(time_str)
 
-    def _to_utc_strings(self, local_date: date, local_time: time, duration_minutes: int = 60) -> Tuple[str, str]:
+    def _to_utc_strings(self, local_date: date, local_time: time, duration_minutes: int = 60, offset_minutes: int = 0) -> Tuple[str, str]:
         """Convert local datetime to UTC strings for ICS format."""
         start_local = datetime.combine(local_date, local_time).replace(tzinfo=self.timezone)
+        # Apply time offset for staggered events
+        start_local = start_local + timedelta(minutes=offset_minutes)
         end_local = start_local + timedelta(minutes=duration_minutes)
         start_utc = start_local.astimezone(ZoneInfo("UTC"))
         end_utc = end_local.astimezone(ZoneInfo("UTC"))
@@ -63,6 +66,9 @@ class CalendarGenerator:
         # Add reminders/alarms
         if reminders:
             for reminder_minutes in reminders:
+                # Convert string to int if needed
+                if isinstance(reminder_minutes, str):
+                    reminder_minutes = int(reminder_minutes)
                 lines.append("BEGIN:VALARM")
                 lines.append("ACTION:DISPLAY")
                 lines.append(f"DESCRIPTION:Reminder: {summary}")
@@ -165,7 +171,7 @@ class CalendarGenerator:
 
     def generate_meals_calendar(self, meal_data: Dict[str, Any], start_date: date, weeks: int) -> str:
         """Generate meals calendar."""
-        calendar_config = self.config.get('meals', {})
+        calendar_config = self.config.get('separate_calendars', {}).get('meals', {})
         calendar_name = calendar_config.get('name', 'PFA_Meals')
         color = calendar_config.get('color', 'green')
         default_duration = calendar_config.get('default_duration', 30)
@@ -176,32 +182,75 @@ class CalendarGenerator:
         # Generate meal events for each week
         for week in range(weeks):
             weekly_meals = meal_data.get(f'week_{week + 1}', {})
-            meal_times = weekly_meals.get('meal_times', {})
+            # Support both old and new data structures
+            if 'daily_plans' in weekly_meals:
+                # New structure from meal generator
+                weekly_meal_times = {}
+                daily_meals_data = weekly_meals['daily_plans']
+
+                # Extract meal times from each day's data
+                for day in daily_meals_data:
+                    if 'meal_times' in daily_meals_data[day]:
+                        weekly_meal_times[day] = daily_meals_data[day]['meal_times']
+            else:
+                # Legacy structure
+                weekly_meal_times = weekly_meals.get('meal_times', {})
+                daily_meals_data = weekly_meals.get('daily_meals', {})
 
             for day_index in range(7):
                 day_name = self.weekdays[day_index]
                 event_date = start_date + timedelta(days=week * 7 + day_index)
-                daily_meals = weekly_meals.get('daily_meals', {}).get(day_name, {})
+                daily_meals = daily_meals_data.get(day_name, {})
+
+                # Get meal times for this specific day
+                day_meal_times = weekly_meal_times.get(day_name, {})
 
                 # Create events for each meal type
-                for meal_type in ['breakfast', 'lunch', 'dinner']:
-                    if meal_type in meal_times and meal_type in daily_meals:
-                        meal_time = self._parse_time(meal_times[meal_type])
-                        start_utc, end_utc = self._to_utc_strings(event_date, meal_time, default_duration)
+                available_meals = [meal for meal in day_meal_times.keys() if meal in daily_meals]
+                for meal_type in available_meals:
+                    if meal_type in day_meal_times and meal_type in daily_meals:
+                        meal_time = self._parse_time(day_meal_times[meal_type])
 
-                        meal_option = daily_meals[meal_type]
-                        macros = daily_meals.get(f'{meal_type}_macros', {})
+                        # Handle both old format (string) and new format (array of options)
+                        meal_info = daily_meals[meal_type]
+                        if isinstance(meal_info, list) and len(meal_info) > 0:
+                            # New format: create separate events for each option
+                            for option_index, meal_option in enumerate(meal_info):
+                                # Stagger the times by 5 minutes for each option
+                                option_time_offset = option_index * 5
+                                option_start_utc, option_end_utc = self._to_utc_strings(
+                                    event_date, meal_time, default_duration, option_time_offset
+                                )
 
-                        description_parts = [f"Meal Option: {meal_option}"]
-                        if macros:
-                            macro_text = " | ".join([f"{k.title()}: {v}g" for k, v in macros.items()])
-                            description_parts.append(f"Macros: {macro_text}")
+                                meal_description = meal_option['description']
+                                macros = meal_option['totals']
 
-                        description = "\\n\\n".join(description_parts)
-                        summary = meal_type.title()
-                        event_id = f"meal-week{week+1}-{day_name.lower()}-{meal_type}"
+                                description_parts = [f"Option {option_index + 1}: {meal_description}"]
+                                if macros:
+                                    macro_text = " | ".join([f"{k.title()}: {v}g" for k, v in macros.items()])
+                                    description_parts.append(f"Macros: {macro_text}")
 
-                        self._add_event(lines, start_utc, end_utc, summary, description, "", reminders, event_id)
+                                description = "\\n\\n".join(description_parts)
+                                summary = f"{meal_type.title()} - Option {option_index + 1}"
+                                event_id = f"meal-week{week+1}-{day_name.lower()}-{meal_type}-opt{option_index+1}"
+
+                                self._add_event(lines, option_start_utc, option_end_utc, summary, description, "", reminders, event_id)
+                        else:
+                            # Legacy format: simple string
+                            start_utc, end_utc = self._to_utc_strings(event_date, meal_time, default_duration)
+                            meal_option = meal_info
+                            macros = daily_meals.get(f'{meal_type}_macros', {})
+
+                            description_parts = [f"Meal Option: {meal_option}"]
+                            if macros:
+                                macro_text = " | ".join([f"{k.title()}: {v}g" for k, v in macros.items()])
+                                description_parts.append(f"Macros: {macro_text}")
+
+                            description = "\\n\\n".join(description_parts)
+                            summary = meal_type.title()
+                            event_id = f"meal-week{week+1}-{day_name.lower()}-{meal_type}"
+
+                            self._add_event(lines, start_utc, end_utc, summary, description, "", reminders, event_id)
 
                 # Create events for snacks
                 for snack_key in daily_meals.keys():
@@ -209,8 +258,8 @@ class CalendarGenerator:
                         snack_number = snack_key.split('_')[1]
                         snack_time_key = f'snack_{snack_number}'
 
-                        if snack_time_key in meal_times:
-                            snack_time = self._parse_time(meal_times[snack_time_key])
+                        if snack_time_key in day_meal_times:
+                            snack_time = self._parse_time(day_meal_times[snack_time_key])
                             start_utc, end_utc = self._to_utc_strings(event_date, snack_time, 15)
 
                             snack_option = daily_meals[snack_key]

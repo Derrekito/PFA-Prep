@@ -4,6 +4,7 @@
 from datetime import datetime, time
 from typing import Dict, Any, List, Tuple, Optional
 import math
+from time_utils import parse_time_to_seconds, seconds_to_time_string
 
 
 class WorkoutProgressionEngine:
@@ -25,16 +26,11 @@ class WorkoutProgressionEngine:
 
     def _parse_time_to_seconds(self, time_str: str) -> int:
         """Convert MM:SS format to total seconds."""
-        if ":" in time_str:
-            minutes, seconds = map(int, time_str.split(":"))
-            return minutes * 60 + seconds
-        return int(time_str)
+        return parse_time_to_seconds(time_str)
 
     def _seconds_to_pace(self, total_seconds: int) -> str:
         """Convert total seconds to MM:SS pace format."""
-        minutes = total_seconds // 60
-        seconds = total_seconds % 60
-        return f"{minutes}:{seconds:02d}"
+        return seconds_to_time_string(total_seconds)
 
     def _normalize_day_name(self, day: str) -> str:
         """Convert full day names to abbreviated format for schedule matching."""

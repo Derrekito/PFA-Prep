@@ -1,0 +1,514 @@
+# Comprehensive Meal Database
+# Structured meal components with metadata for intelligent meal generation
+
+proteins:
+  - name: "Grilled chicken breast"
+    portion: "4oz (115g)"
+    calories: 185
+    protein: 35
+    carbs: 0
+    fat: 4
+    meal_types: ["lunch", "dinner"]
+    tags: ["lean", "versatile"]
+    exclusions: ["fried_chicken"]
+    prep_time: 15
+
+  - name: "Eggs"
+    portion: "2 large"
+    calories: 140
+    protein: 12
+    carbs: 1
+    fat: 10
+    meal_types: ["breakfast"]
+    tags: ["versatile", "protein"]
+    exclusions: ["boiled_eggs"]
+    prep_time: 5
+
+  - name: "Boiled eggs"
+    portion: "2 large"
+    calories: 140
+    protein: 12
+    carbs: 1
+    fat: 10
+    meal_types: ["breakfast", "snack"]
+    tags: ["portable", "prep_ahead"]
+    exclusions: ["eggs"]
+    prep_time: 10
+
+  - name: "Greek yogurt (plain)"
+    portion: "1 cup (225g)"
+    calories: 130
+    protein: 20
+    carbs: 9
+    fat: 0
+    meal_types: ["breakfast", "snack"]
+    tags: ["probiotic", "calcium"]
+    exclusions: []
+    prep_time: 0
+
+  - name: "Turkey ground (93/7)"
+    portion: "4oz (115g)"
+    calories: 170
+    protein: 22
+    carbs: 0
+    fat: 9
+    meal_types: ["lunch", "dinner"]
+    tags: ["lean", "versatile"]
+    exclusions: ["ground_beef"]
+    prep_time: 10
+
+  - name: "Protein powder (whey)"
+    portion: "1 scoop (25g)"
+    calories: 120
+    protein: 25
+    carbs: 2
+    fat: 1
+    meal_types: ["breakfast", "snack", "post_workout"]
+    tags: ["convenient", "high_protein"]
+    exclusions: []
+    prep_time: 2
+
+  - name: "Cottage cheese (low-fat)"
+    portion: "1 cup (225g)"
+    calories: 163
+    protein: 28
+    carbs: 6
+    fat: 2
+    meal_types: ["breakfast", "snack"]
+    tags: ["casein_protein", "calcium"]
+    exclusions: []
+    prep_time: 0
+
+  - name: "Fish sticks"
+    portion: "4 pieces (100g)"
+    calories: 230
+    protein: 12
+    carbs: 20
+    fat: 11
+    meal_types: ["lunch", "dinner"]
+    tags: ["convenient", "frozen"]
+    exclusions: []
+    prep_time: 15
+
+  - name: "Pork loin (lean)"
+    portion: "4oz (115g)"
+    calories: 190
+    protein: 26
+    carbs: 0
+    fat: 9
+    meal_types: ["lunch", "dinner"]
+    tags: ["lean", "versatile"]
+    exclusions: ["pork_chop", "bacon"]
+    prep_time: 20
+
+  - name: "Beef sirloin steak"
+    portion: "4oz (115g)"
+    calories: 230
+    protein: 25
+    carbs: 0
+    fat: 15
+    meal_types: ["lunch", "dinner"]
+    tags: ["lean_red_meat", "grill"]
+    exclusions: ["ground_beef"]
+    prep_time: 15
+
+  - name: "Ground beef (90/10)"
+    portion: "4oz (115g)"
+    calories: 220
+    protein: 23
+    carbs: 0
+    fat: 13
+    meal_types: ["lunch", "dinner"]
+    tags: ["red_meat", "versatile"]
+    exclusions: ["sirloin"]
+    prep_time: 10
+
+  - name: "Rotisserie chicken (skinless breast)"
+    portion: "4oz (115g)"
+    calories: 180
+    protein: 27
+    carbs: 0
+    fat: 7
+    meal_types: ["lunch", "dinner"]
+    tags: ["convenient", "ready_to_eat"]
+    exclusions: []
+    prep_time: 0
+
+  - name: "Deli turkey (low sodium)"
+    portion: "4oz (115g)"
+    calories: 120
+    protein: 20
+    carbs: 0
+    fat: 3
+    meal_types: ["lunch", "snack"]
+    tags: ["quick", "lean"]
+    exclusions: []
+    prep_time: 0
+
+  - name: "Bacon"
+    portion: "2 slices (16g cooked)"
+    calories: 80
+    protein: 6
+    carbs: 0
+    fat: 6
+    meal_types: ["breakfast", "snack"]
+    tags: ["savory", "quick"]
+    exclusions: ["pork_loin"]
+    prep_time: 5
+
+  - name: "Beef jerky"
+    portion: "1oz (28g)"
+    calories: 116
+    protein: 9
+    carbs: 3
+    fat: 7
+    meal_types: ["snack"]
+    tags: ["portable", "high_protein"]
+    exclusions: []
+    prep_time: 0
+
+  - name: "Protein bar"
+    portion: "1 bar (~60g)"
+    calories: 220
+    protein: 20
+    carbs: 23
+    fat: 8
+    meal_types: ["breakfast", "snack"]
+    tags: ["convenient", "portable"]
+    exclusions: []
+    prep_time: 0
+
+  - name: "Mixed nuts"
+    portion: "1oz (28g)"
+    calories: 170
+    protein: 5
+    carbs: 6
+    fat: 15
+    meal_types: ["snack"]
+    tags: ["healthy_fat", "portable", "satisfying"]
+    exclusions: []
+    prep_time: 0
+
+carbs:
+  - name: "Steel-cut oats"
+    portion: "1/2 cup dry"
+    calories: 150
+    protein: 5
+    carbs: 27
+    fat: 3
+    meal_types: ["breakfast"]
+    tags: ["fiber", "heart_healthy", "weekend"]
+    exclusions: ["instant_oats"]
+    prep_time: 20
+
+  - name: "Quick oats"
+    portion: "1/2 cup dry"
+    calories: 150
+    protein: 5
+    carbs: 27
+    fat: 3
+    meal_types: ["breakfast"]
+    tags: ["fiber", "quick"]
+    exclusions: ["steel_cut_oats"]
+    prep_time: 5
+
+  - name: "Brown rice"
+    portion: "1/2 cup cooked"
+    calories: 110
+    protein: 3
+    carbs: 22
+    fat: 1
+    meal_types: ["lunch", "dinner"]
+    tags: ["fiber", "whole_grain"]
+    exclusions: ["white_rice", "quinoa"]
+    prep_time: 25
+
+  - name: "White rice"
+    portion: "1/2 cup cooked"
+    calories: 120
+    protein: 3
+    carbs: 26
+    fat: 0
+    meal_types: ["lunch", "dinner"]
+    tags: ["staple", "versatile"]
+    exclusions: ["brown_rice"]
+    prep_time: 20
+
+  - name: "Sweet potato"
+    portion: "1 medium (150g)"
+    calories: 130
+    protein: 2
+    carbs: 30
+    fat: 0
+    meal_types: ["lunch", "dinner"]
+    tags: ["nutrient_dense", "vitamin_a"]
+    exclusions: ["regular_potato"]
+    prep_time: 30
+
+  - name: "Quinoa"
+    portion: "1/2 cup cooked"
+    calories: 111
+    protein: 4
+    carbs: 20
+    fat: 2
+    meal_types: ["lunch", "dinner"]
+    tags: ["complete_protein", "gluten_free"]
+    exclusions: ["brown_rice"]
+    prep_time: 15
+
+  - name: "Whole grain toast"
+    portion: "2 slices"
+    calories: 140
+    protein: 6
+    carbs: 26
+    fat: 2
+    meal_types: ["breakfast"]
+    tags: ["fiber", "convenient"]
+    exclusions: ["white_bread"]
+    prep_time: 2
+
+vegetables:
+  - name: "Steamed broccoli"
+    portion: "1 cup"
+    calories: 55
+    protein: 5
+    carbs: 11
+    fat: 0
+    meal_types: ["lunch", "dinner"]
+    tags: ["cruciferous", "vitamin_c"]
+    exclusions: []
+    prep_time: 8
+
+  - name: "Spinach (fresh)"
+    portion: "2 cups"
+    calories: 14
+    protein: 2
+    carbs: 2
+    fat: 0
+    meal_types: ["breakfast", "lunch", "dinner"]
+    tags: ["iron", "folate", "versatile"]
+    exclusions: []
+    prep_time: 2
+
+  - name: "Bell peppers (mixed)"
+    portion: "1 cup sliced"
+    calories: 30
+    protein: 1
+    carbs: 7
+    fat: 0
+    meal_types: ["breakfast", "lunch", "dinner"]
+    tags: ["vitamin_c", "colorful"]
+    exclusions: []
+    prep_time: 5
+
+  - name: "Asparagus"
+    portion: "1 cup"
+    calories: 27
+    protein: 3
+    carbs: 5
+    fat: 0
+    meal_types: ["dinner"]
+    tags: ["spring", "elegant"]
+    exclusions: []
+    prep_time: 10
+
+  - name: "Brussels sprouts"
+    portion: "1 cup"
+    calories: 38
+    protein: 3
+    carbs: 8
+    fat: 0
+    meal_types: ["dinner"]
+    tags: ["cruciferous", "roasted"]
+    exclusions: []
+    prep_time: 20
+
+  - name: "Mushrooms (mixed)"
+    portion: "1 cup sliced"
+    calories: 20
+    protein: 3
+    carbs: 3
+    fat: 0
+    meal_types: ["breakfast", "lunch", "dinner"]
+    tags: ["umami", "versatile"]
+    exclusions: []
+    prep_time: 8
+
+  - name: "Cauliflower rice"
+    portion: "1 cup"
+    calories: 25
+    protein: 2
+    carbs: 5
+    fat: 0
+    meal_types: ["lunch", "dinner"]
+    tags: ["low_carb", "rice_substitute"]
+    exclusions: ["brown_rice", "quinoa"]
+    prep_time: 10
+
+  - name: "Mixed salad greens"
+    portion: "2 cups"
+    calories: 20
+    protein: 2
+    carbs: 4
+    fat: 0
+    meal_types: ["lunch", "dinner"]
+    tags: ["fresh", "light"]
+    exclusions: []
+    prep_time: 2
+
+  - name: "Cabbage"
+    portion: "1 cup shredded"
+    calories: 22
+    protein: 1
+    carbs: 5
+    fat: 0
+    meal_types: ["lunch", "dinner"]
+    tags: ["cruciferous", "versatile"]
+    exclusions: []
+    prep_time: 5
+
+  - name: "Avocado slices"
+    portion: "1/2 medium"
+    calories: 160
+    protein: 2
+    carbs: 9
+    fat: 15
+    meal_types: ["breakfast", "lunch", "dinner"]
+    tags: ["healthy_fat", "fiber", "creamy"]
+    exclusions: []
+    prep_time: 2
+
+fruits:
+  - name: "Blueberries"
+    portion: "1/2 cup"
+    calories: 42
+    protein: 1
+    carbs: 11
+    fat: 0
+    meal_types: ["breakfast", "snack"]
+    tags: ["antioxidants", "berries"]
+    exclusions: ["strawberries"]
+    prep_time: 0
+
+  - name: "Banana"
+    portion: "1 medium"
+    calories: 105
+    protein: 1
+    carbs: 27
+    fat: 0
+    meal_types: ["breakfast", "snack", "post_workout"]
+    tags: ["potassium", "quick_energy"]
+    exclusions: ["apple"]
+    prep_time: 0
+
+  - name: "Apple"
+    portion: "1 medium"
+    calories: 95
+    protein: 0
+    carbs: 25
+    fat: 0
+    meal_types: ["snack"]
+    tags: ["fiber", "portable"]
+    exclusions: ["banana"]
+    prep_time: 0
+
+  - name: "Strawberries"
+    portion: "1 cup"
+    calories: 49
+    protein: 1
+    carbs: 12
+    fat: 0
+    meal_types: ["breakfast", "snack"]
+    tags: ["vitamin_c", "berries"]
+    exclusions: ["blueberries"]
+    prep_time: 0
+
+  - name: "Grapes"
+    portion: "1 cup"
+    calories: 100
+    protein: 1
+    carbs: 27
+    fat: 0
+    meal_types: ["snack"]
+    tags: ["portable", "sweet"]
+    exclusions: []
+    prep_time: 0
+
+  - name: "Orange"
+    portion: "1 medium"
+    calories: 62
+    protein: 1
+    carbs: 15
+    fat: 0
+    meal_types: ["snack", "breakfast"]
+    tags: ["vitamin_c", "citrus"]
+    exclusions: []
+    prep_time: 0
+
+  - name: "Pineapple chunks"
+    portion: "1 cup"
+    calories: 80
+    protein: 1
+    carbs: 21
+    fat: 0
+    meal_types: ["snack"]
+    tags: ["tropical", "sweet"]
+    exclusions: []
+    prep_time: 0
+
+  - name: "Mango (fresh, sliced)"
+    portion: "1 cup"
+    calories: 100
+    protein: 1
+    carbs: 25
+    fat: 0
+    meal_types: ["snack"]
+    tags: ["tropical", "sweet"]
+    exclusions: []
+    prep_time: 0
+
+  - name: "Pear"
+    portion: "1 medium"
+    calories: 100
+    protein: 1
+    carbs: 27
+    fat: 0
+    meal_types: ["snack"]
+    tags: ["fiber", "portable"]
+    exclusions: []
+    prep_time: 0
+
+# Meal generation rules
+meal_generation:
+  options_per_meal: 3  # Generate 3 options per meal
+
+  combination_rules:
+    breakfast:
+      required_components: ["proteins"]
+      optional_components: ["carbs", "fruits"]
+      min_protein: 15
+      target_calories: [300, 450]
+      weekend_preference: ["steel_cut_oats", "almond_butter"]
+
+    lunch:
+      required_components: ["proteins", "vegetables"]
+      optional_components: ["carbs"]
+      min_protein: 20
+      target_calories: [400, 600]
+
+    dinner:
+      required_components: ["proteins", "vegetables"]
+      optional_components: ["carbs"]
+      min_protein: 25
+      target_calories: [450, 650]
+
+    snack:
+      required_components: ["proteins"]
+      optional_components: ["carbs", "fruits"]
+      min_protein: 10
+      target_calories: [120, 250]
+
+  variety_rules:
+    max_repeat_frequency: 2  # Same combination max 2x per week
+    protein_rotation: true   # Don't repeat same protein back-to-back
+    exclusion_enforcement: true  # Enforce exclusion rules

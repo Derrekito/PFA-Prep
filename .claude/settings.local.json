@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/tmp/claude/test_advanced_meals.sh:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

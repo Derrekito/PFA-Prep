@@ -4,21 +4,18 @@
 from datetime import time, timedelta
 from typing import Dict, Any, List, Tuple
 import math
+from time_utils import parse_time_to_seconds, seconds_to_time_string
 
 
 def time_string_to_seconds(time_str: str) -> int:
     """Convert MM:SS format to total seconds."""
-    if ":" in time_str:
-        minutes, seconds = map(int, time_str.split(":"))
-        return minutes * 60 + seconds
-    return int(time_str)
+    return parse_time_to_seconds(time_str)
 
 
 def seconds_to_time_string(total_seconds: int) -> str:
     """Convert total seconds to MM:SS format."""
-    minutes = total_seconds // 60
-    seconds = total_seconds % 60
-    return f"{minutes}:{seconds:02d}"
+    from time_utils import seconds_to_time_string as util_seconds_to_time_string
+    return util_seconds_to_time_string(total_seconds)
 
 
 class FitnessProgressionCalculator:

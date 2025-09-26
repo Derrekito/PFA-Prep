@@ -102,7 +102,20 @@ def generate_plan(config_path: str):
         config.timeline.buffer_weeks
     )
 
-    nutrition_planner = NutritionPlanner(config.nutrition.__dict__)
+    # Load meal database for advanced meal planning
+    meal_database_path = Path(__file__).parent / 'configs' / 'meal_database.yml'
+    if meal_database_path.exists():
+        with open(meal_database_path, 'r') as f:
+            meal_database_config = yaml.safe_load(f)
+
+        # Add meal database to nutrition config
+        nutrition_config = config.nutrition.__dict__.copy()
+        nutrition_config['meal_database'] = meal_database_config
+        nutrition_config['meal_generation'] = meal_database_config.get('meal_generation', {})
+    else:
+        nutrition_config = config.nutrition.__dict__
+
+    nutrition_planner = NutritionPlanner(nutrition_config)
     supplement_scheduler = SupplementScheduler(config.supplements.__dict__)
     progression_engine = WorkoutProgressionEngine(
         config.training.__dict__,
@@ -126,9 +139,16 @@ def generate_plan(config_path: str):
     print("  - Planning meals...")
     # Generate meal plans for each week
     meal_plans = {}
-    for week in range(config.timeline.weeks):
-        weekly_meals = nutrition_planner.generate_weekly_meal_plan(week + 1)
-        meal_plans[f'week_{week + 1}'] = weekly_meals
+    try:
+        for week in range(config.timeline.weeks):
+            weekly_meals = nutrition_planner.generate_advanced_meal_plan(week + 1)
+            meal_plans[f'week_{week + 1}'] = weekly_meals
+    except ValueError as e:
+        if "Meal planning cancelled" in str(e):
+            print(f"\n❌ Meal planning cancelled. Please fix the configuration conflicts and try again.")
+            return False
+        else:
+            raise
 
     print("  - Scheduling supplements...")
     # Create workout schedule for supplement timing

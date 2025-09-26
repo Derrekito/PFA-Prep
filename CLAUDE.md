@@ -58,13 +58,46 @@ nutrition:
   meal_timing:
     pre_workout: "-30"        # Minutes before workout
     post_workout: "+45"       # Minutes after workout
-    meals_per_day: 3          # Main meals
-    snacks_per_day: 2         # Additional snacks
+
+    # Day-specific meal configuration
+    weekdays:
+      meals_per_day: 2        # 2 meals on weekdays
+      snacks_per_day: 1       # 1 snack on weekdays
+    weekends:
+      meals_per_day: 3        # 3 meals on weekends
+      snacks_per_day: 1       # 1 snack on weekends
+
+    # Manual meal schedule using breakfast/lunch/dinner nomenclature
+    manual_schedule:
+      # Weekday meals (2 meals: breakfast + dinner)
+      - name: "breakfast"
+        time: "11:30"
+        days: ["Mon", "Tue", "Wed", "Thu", "Fri"]
+      - name: "dinner"
+        time: "18:00"
+        days: ["Mon", "Tue", "Wed", "Thu", "Fri"]
+
+      # Weekend meals (3 meals: breakfast + lunch + dinner)
+      - name: "breakfast"
+        time: "09:00"
+        days: ["Sat", "Sun"]
+      - name: "lunch"
+        time: "13:00"
+        days: ["Sat", "Sun"]
+      - name: "dinner"
+        time: "18:00"
+        days: ["Sat", "Sun"]
+
+      # Snacks for all days
+      - name: "snack"
+        time: "14:30"
+        days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
   dietary_preferences:
     restrictions: ["none"]    # "vegetarian", "vegan", "keto", "paleo", etc.
     allergies: []             # Food allergies/intolerances
     dislikes: []              # Foods to avoid
+
 ```
 
 ### Supplement Protocol
@@ -185,12 +218,16 @@ calendar:
 - **Manual Calorie Setting**: Uses user-specified daily calorie target
 - **Macro Distribution**: Converts percentages to gram targets based on calorie goal
 
-### 3. Meal Plan Generator
-- **Time-Restricted Eating**: Respects eating windows (e.g., 8am-8pm)
-- **Workout Timing**: Plans pre/post workout nutrition
-- **Variety Engine**: Rotates meal options to prevent monotony
-- **Prep-Friendly**: Groups similar ingredients and prep methods
-- **Macro Targets**: Ensures daily meals hit calorie/macro goals
+### 3. Advanced Meal Plan Generator
+- **Structured Meal Database**: Uses separate YAML database (`configs/meal_database.yml`) with detailed food metadata
+- **Intelligent Meal Combinations**: Combines proteins, carbs, vegetables, and fruits based on meal type requirements
+- **Multiple Options Per Meal**: Generates 3 distinct meal options per meal type per day (9+ options daily)
+- **Time-Restricted Eating**: Respects eating windows (e.g., 11am-7pm) with override capability
+- **Day-Specific Configuration**: Different meal counts for weekdays (2 meals) vs weekends (3 meals)
+- **Weekend Preferences**: Enhanced breakfast options for weekend meals when more time is available
+- **Macro Precision**: Each meal option includes detailed macronutrient breakdown and calorie counts
+- **Exclusion Rules**: Prevents conflicting food combinations (e.g., eggs vs boiled eggs)
+- **Portion Control**: Precise portion sizes for accurate macro calculations
 
 ### 4. Supplement Scheduler
 - **Timing Optimization**: Schedules supplements for maximum efficacy
@@ -204,10 +241,13 @@ calendar:
 - **Component Balancing**: Ensures all PFA elements get adequate attention
 - **Recovery Integration**: Schedules rest days and deload weeks
 
-### 6. Calendar Integration
-- **ICS Export**: Generates .ics calendar files
+### 6. Advanced Calendar Integration
+- **ICS Export**: Generates .ics calendar files compatible with all major calendar applications
 - **Separate Calendar Files**: Generates distinct .ics files for workouts, meals, and supplements
-- **Smart Scheduling**: Avoids conflicts and optimizes timing
+- **Multiple Meal Options**: Creates separate calendar events for each meal option (3 per meal type)
+- **Time Staggering**: Meal options are staggered by 5-minute intervals for easy selection
+- **Detailed Event Descriptions**: Each event includes full ingredient lists, portions, and macro breakdowns
+- **Smart Reminders**: Configurable reminder timing with string-to-integer parsing
 - **Progress Tracking**: Includes fields for logging actual performance
 - **Flexibility**: Easy to modify individual events without rebuilding
 
@@ -267,10 +307,58 @@ curl -X POST http://127.0.0.1:8000/graph/query \
 
 This development approach keeps investigations grounded in the current repository state and helps agents understand code relationships without loading unrelated files.
 
+## Meal Database System
+
+The system uses a separate structured meal database (`configs/meal_database.yml`) with detailed food metadata:
+
+### Database Structure
+```yaml
+proteins:
+  - name: "Grilled chicken breast"
+    portion: "4oz (115g)"
+    calories: 185
+    protein: 35
+    carbs: 0
+    fat: 4
+    meal_types: ["lunch", "dinner"]
+    tags: ["lean", "versatile"]
+    exclusions: ["fried_chicken"]
+    prep_time: 15
+
+carbs:
+  - name: "Brown rice"
+    portion: "1/2 cup cooked"
+    calories: 110
+    protein: 3
+    carbs: 22
+    fat: 1
+    meal_types: ["lunch", "dinner"]
+    tags: ["fiber", "whole_grain"]
+    exclusions: ["white_rice", "quinoa"]
+    prep_time: 25
+
+meal_generation:
+  options_per_meal: 3
+  combination_rules:
+    breakfast:
+      required_components: ["proteins"]
+      optional_components: ["carbs", "fruits"]
+      min_protein: 15
+      target_calories: [300, 450]
+```
+
+### Meal Generation Features
+- **Component-Based Assembly**: Intelligently combines proteins + vegetables + carbs + fruits
+- **Meal Type Appropriateness**: Each food item specifies which meals it's suitable for
+- **Nutritional Requirements**: Minimum protein and calorie ranges per meal type
+- **Exclusion Logic**: Prevents conflicting combinations (e.g., brown rice + white rice)
+- **Weekend Preferences**: Special handling for weekend meals with more elaborate options
+
 ## File Structure
 ```
 PFA_plan/
 ├── configs/
+│   ├── meal_database.yml       # Structured meal database with metadata
 │   ├── templates/
 │   │   ├── beginner.yml
 │   │   ├── intermediate.yml
@@ -281,6 +369,7 @@ PFA_plan/
 │   ├── config_loader.py         # YAML configuration handling
 │   ├── fitness_calculator.py    # Progression calculations
 │   ├── nutrition_planner.py     # Meal planning and macros
+│   ├── meal_generator.py        # Advanced meal combination engine
 │   ├── supplement_scheduler.py  # Supplement timing optimization
 │   ├── calendar_generator.py    # ICS file generation
 │   └── progression_engine.py    # Workout programming
@@ -289,7 +378,7 @@ PFA_plan/
 ├── outputs/
 │   └── calendars/
 │       ├── PFA_Workouts.ics
-│       ├── PFA_Meals.ics
+│       ├── PFA_Meals.ics       # Contains 3 options per meal (9+ daily)
 │       └── PFA_Supplements.ics
 ├── venvs/
 │   ├── main/                   # Main Python virtual environment
