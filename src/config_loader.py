@@ -2,10 +2,28 @@
 """YAML configuration loader with validation for PFA planning system."""
 
 import yaml
+import os
+import re
 from datetime import datetime, date, time
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+def substitute_env_vars(obj):
+    """Recursively substitute environment variables in strings."""
+    if isinstance(obj, str):
+        # Replace ${VAR_NAME} with environment variable value
+        return re.sub(r'\$\{([^}]+)\}', lambda m: os.getenv(m.group(1), m.group(0)), obj)
+    elif isinstance(obj, dict):
+        return {k: substitute_env_vars(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [substitute_env_vars(item) for item in obj]
+    else:
+        return obj
 
 
 @dataclass
@@ -69,6 +87,7 @@ class PFAConfig:
     training: TrainingConfig
     progression: ProgressionConfig
     calendar: CalendarConfig
+    recipe_config: Optional[str] = None
 
 
 def parse_time_string(time_str: str) -> time:
@@ -122,6 +141,7 @@ def load_config(config_path: str) -> PFAConfig:
 
     with open(config_path, 'r') as f:
         data = yaml.safe_load(f)
+        data = substitute_env_vars(data)
 
     # Load meal database if available
     meal_database = load_meal_database(str(config_path))
@@ -132,6 +152,9 @@ def load_config(config_path: str) -> PFAConfig:
         data['nutrition']['meal_database'] = meal_database
         if 'meal_generation' in meal_database:
             data['nutrition']['meal_generation'] = meal_database['meal_generation']
+
+    # Extract recipe_config if present
+    recipe_config = data.get('recipe_config', None)
 
     # Parse timeline
     timeline_data = data['timeline']
@@ -201,7 +224,8 @@ def load_config(config_path: str) -> PFAConfig:
         supplements=supplements,
         training=training,
         progression=progression,
-        calendar=calendar
+        calendar=calendar,
+        recipe_config=recipe_config
     )
 
 

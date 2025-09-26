@@ -1,6 +1,9 @@
 # PFA Planning System - Advanced Template
 # For experienced athletes pushing for high scores
 
+# Recipe integration configuration
+recipe_config: "configs/recipe_config.yml"
+
 timeline:
   start_date: "2025-01-15"
   weeks: 12                    # Shorter, more intense timeline
@@ -144,7 +147,7 @@ calendar:
       reminders: [-30, -10, -2]  # More reminders for important sessions
 
     meals:
-      name: "PFA_Advanced_Meals"
+      name: "PFA_Meals"
       color: "green"
       default_duration: 25     # Quicker meals
       reminders: [-5]

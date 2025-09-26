@@ -1,6 +1,9 @@
 # PFA Planning System - Intermediate Template
 # For those with some fitness experience
 
+# Recipe integration configuration
+recipe_config: "configs/recipe_config.yml"
+
 timeline:
   start_date: "2025-01-15"
   weeks: 16                    # Standard timeline
@@ -133,7 +136,7 @@ calendar:
       reminders: [-15, -5]
 
     meals:
-      name: "PFA_Intermediate_Meals"
+      name: "PFA_Meals"
       color: "green"
       default_duration: 30
       reminders: [-10]

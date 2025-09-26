@@ -214,27 +214,83 @@ class CalendarGenerator:
                         # Handle both old format (string) and new format (array of options)
                         meal_info = daily_meals[meal_type]
                         if isinstance(meal_info, list) and len(meal_info) > 0:
-                            # New format: create separate events for each option
-                            for option_index, meal_option in enumerate(meal_info):
-                                # Stagger the times by 5 minutes for each option
-                                option_time_offset = option_index * 5
-                                option_start_utc, option_end_utc = self._to_utc_strings(
-                                    event_date, meal_time, default_duration, option_time_offset
-                                )
+                            # New format: create single event with all options in description
+                            start_utc, end_utc = self._to_utc_strings(event_date, meal_time, default_duration)
 
+                            all_options_parts = []
+
+                            for option_index, meal_option in enumerate(meal_info):
                                 meal_description = meal_option['description']
                                 macros = meal_option['totals']
 
-                                description_parts = [f"Option {option_index + 1}: {meal_description}"]
+                                option_parts = [f"Option {option_index + 1}: {meal_description}"]
+
+                                # Handle recipe-specific information
+                                if meal_option.get('type') in ['recipe', 'component_with_recipe', 'component_with_no_recipe']:
+                                    recipe_info = meal_option.get('recipe', {})
+                                    if recipe_info.get('ingredients'):
+                                        ingredients_display = meal_option.get('ingredients_display', '')
+                                        if ingredients_display:
+                                            option_parts.append(f"Ingredients: {ingredients_display}")
+
+                                    if recipe_info.get('instructions'):
+                                        instructions_preview = meal_option.get('instructions_preview', '')
+                                        if instructions_preview:
+                                            option_parts.append(f"Instructions: {instructions_preview}")
+
+                                    # Add cooking time information
+                                    prep_time = recipe_info.get('prep_time', 0)
+                                    cook_time = recipe_info.get('cook_time', 0)
+                                    if prep_time or cook_time:
+                                        time_info = []
+                                        if prep_time:
+                                            time_info.append(f"Prep: {prep_time}min")
+                                        if cook_time:
+                                            time_info.append(f"Cook: {cook_time}min")
+                                        option_parts.append(f"Time: {' | '.join(time_info)}")
+
+                                    # Add servings and source info
+                                    servings = recipe_info.get('servings', 1)
+                                    if servings > 1:
+                                        option_parts.append(f"Serves: {servings}")
+
+                                    source_url = recipe_info.get('source_url')
+                                    if source_url:
+                                        option_parts.append(f"Recipe URL: {source_url}")
+
+                                    # Add difficulty if specified
+                                    difficulty = recipe_info.get('difficulty', '')
+                                    if difficulty and difficulty != 'medium':
+                                        option_parts.append(f"Difficulty: {difficulty.title()}")
+
+                                    # Add tags
+                                    tags = recipe_info.get('tags', [])
+                                    if tags:
+                                        tag_text = ', '.join(tags[:5])  # Limit to first 5 tags
+                                        option_parts.append(f"Tags: {tag_text}")
+
+                                # Show component items for component-based meals
+                                if meal_option.get('type') in ['component_only', 'component_with_recipe', 'component_with_no_recipe']:
+                                    items = meal_option.get('items', [])
+                                    if items:
+                                        items_text = " + ".join([f"{item['name']} ({item.get('portion', '')})"
+                                                                 for item in items])
+                                        option_parts.append(f"Components: {items_text}")
+
+                                # Add macro information
                                 if macros:
-                                    macro_text = " | ".join([f"{k.title()}: {v}g" for k, v in macros.items()])
-                                    description_parts.append(f"Macros: {macro_text}")
+                                    macro_text = " | ".join([f"{k.title()}: {v}g" if k != 'calories'
+                                                             else f"{k.title()}: {v}"
+                                                             for k, v in macros.items()])
+                                    option_parts.append(f"Nutrition: {macro_text}")
 
-                                description = "\\n\\n".join(description_parts)
-                                summary = f"{meal_type.title()} - Option {option_index + 1}"
-                                event_id = f"meal-week{week+1}-{day_name.lower()}-{meal_type}-opt{option_index+1}"
+                                all_options_parts.append("\\n".join(option_parts))
 
-                                self._add_event(lines, option_start_utc, option_end_utc, summary, description, "", reminders, event_id)
+                            description = "\\n\\n".join(all_options_parts)
+                            summary = f"{meal_type.title()}"
+                            event_id = f"meal-week{week+1}-{day_name.lower()}-{meal_type}"
+
+                            self._add_event(lines, start_utc, end_utc, summary, description, "", reminders, event_id)
                         else:
                             # Legacy format: simple string
                             start_utc, end_utc = self._to_utc_strings(event_date, meal_time, default_duration)

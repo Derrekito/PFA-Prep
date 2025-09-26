@@ -134,6 +134,67 @@ supplements:
         condition: "if_no_meal_within_hour"
 ```
 
+### Recipe Integration
+```yaml
+recipe_integration:
+  enable_recipes: true              # Enable/disable recipe fetching
+  recipe_ratio: 0.3                # 30% recipes, 70% component meals
+  max_recipes_per_meal: 2          # Maximum recipes to show per meal
+
+  # Recipe API configurations
+  recipe_apis:
+    # TheMealDB - Completely free, no API key required
+    themealdb:
+      enabled: true
+
+    # Edamam Recipe Search API - Free tier available
+    edamam:
+      enabled: true
+      app_id: "${EDAMAM_APPLICATION_ID}"      # From .env file
+      app_key: "${EDAMAM_APPLICATION_KEY}"    # From .env file
+
+    # Spoonacular Food API - Requires paid account
+    spoonacular:
+      enabled: false                # Disabled - requires payment
+      api_key: "${SPOONACULAR_API_KEY}"
+
+  # Dietary filters for recipe searches
+  dietary_filters:
+    - "high-protein"                # Focus on high-protein recipes
+
+  # Recipe preferences
+  preferences:
+    difficulty_preference: ["easy", "medium"]  # Preferred difficulty levels
+    max_cook_time: 45              # Maximum cooking time (minutes)
+    min_rating: 3.5                # Minimum recipe rating
+
+  # Cache settings
+  cache:
+    cache_duration: 3600           # Cache recipes for 1 hour
+    max_cache_size: 50             # Maximum recipes per cache entry
+
+# Environment Variables (.env file)
+# EDAMAM_APPLICATION_ID=your_app_id_here
+# EDAMAM_APPLICATION_KEY=your_app_key_here
+# SPOONACULAR_API_KEY=your_api_key_here
+```
+
+#### Edamam API Available Tags (Official Documentation)
+
+The Edamam Recipe Search API provides extensive filtering options through various tag categories:
+
+**Health Labels**: Alcohol-Free, Dairy-Free, Egg-Free, Gluten-Free, Keto-Friendly, Vegan, Vegetarian, Wheat-Free, Peanut-Free, Tree-Nut-Free, Soy-Free, Fish-Free, Shellfish-Free, Pork-Free, Red-Meat-Free, Crustacean-Free
+
+**Diet Labels**: Balanced, High-Fiber, High-Protein, Low-Carb, Low-Fat, Low-Sodium
+
+**Cuisine Types**: American, Asian, British, Chinese, French, Greek, Indian, Italian, Japanese, Mediterranean, Mexican, Middle Eastern
+
+**Dish Types**: Bread, Desserts, Main Course, Pasta, Pizza, Salad, Sandwiches, Soup, Starter
+
+**Meal Types**: Breakfast, Brunch, Lunch/Dinner, Snack, Teatime
+
+These tags can be used generically in the `recipe_tags` filtering configuration in the nutrition section - you don't need to specify which category each tag belongs to, just add them to `include_tags` or `exclude_tags` lists.
+
 ### Training Schedule
 ```yaml
 training:
@@ -218,16 +279,22 @@ calendar:
 - **Manual Calorie Setting**: Uses user-specified daily calorie target
 - **Macro Distribution**: Converts percentages to gram targets based on calorie goal
 
-### 3. Advanced Meal Plan Generator
+### 3. Advanced Meal Plan Generator with Recipe Integration
 - **Structured Meal Database**: Uses separate YAML database (`configs/meal_database.yml`) with detailed food metadata
-- **Intelligent Meal Combinations**: Combines proteins, carbs, vegetables, and fruits based on meal type requirements
+- **Recipe API Integration**: Fetches real recipes from multiple APIs (TheMealDB, Edamam, Spoonacular)
+- **Hybrid Meal Options**: Each meal option combines database ingredients WITH matching recipes
+- **Intelligent Fallback**: Progressive search strategies when APIs don't find recipe matches
+- **Smart Ingredient Extraction**: Identifies key ingredients (e.g., "toast" from "whole grain toast")
 - **Multiple Options Per Meal**: Generates 3 distinct meal options per meal type per day (9+ options daily)
+- **Single Calendar Events**: Creates ONE event per meal with all 3 options included (not separate events)
 - **Time-Restricted Eating**: Respects eating windows (e.g., 11am-7pm) with override capability
 - **Day-Specific Configuration**: Different meal counts for weekdays (2 meals) vs weekends (3 meals)
 - **Weekend Preferences**: Enhanced breakfast options for weekend meals when more time is available
 - **Macro Precision**: Each meal option includes detailed macronutrient breakdown and calorie counts
 - **Exclusion Rules**: Prevents conflicting food combinations (e.g., eggs vs boiled eggs)
 - **Portion Control**: Precise portion sizes for accurate macro calculations
+- **Clean Error Handling**: User-friendly API error messages with program-consistent styling
+- **Configurable APIs**: Enable/disable individual recipe APIs based on availability and cost
 
 ### 4. Supplement Scheduler
 - **Timing Optimization**: Schedules supplements for maximum efficacy
@@ -244,9 +311,10 @@ calendar:
 ### 6. Advanced Calendar Integration
 - **ICS Export**: Generates .ics calendar files compatible with all major calendar applications
 - **Separate Calendar Files**: Generates distinct .ics files for workouts, meals, and supplements
-- **Multiple Meal Options**: Creates separate calendar events for each meal option (3 per meal type)
-- **Time Staggering**: Meal options are staggered by 5-minute intervals for easy selection
-- **Detailed Event Descriptions**: Each event includes full ingredient lists, portions, and macro breakdowns
+- **Consolidated Meal Events**: Creates ONE event per meal containing all 3 options with recipes
+- **Recipe Integration**: Each meal event includes both ingredient lists AND full recipe instructions
+- **Detailed Event Descriptions**: Each event includes full ingredient lists, portions, macro breakdowns, and cooking instructions
+- **Graceful Error Handling**: Ctrl+C interruption handled cleanly without stack traces
 - **Smart Reminders**: Configurable reminder timing with string-to-integer parsing
 - **Progress Tracking**: Includes fields for logging actual performance
 - **Flexibility**: Easy to modify individual events without rebuilding
@@ -359,10 +427,13 @@ meal_generation:
 PFA_plan/
 ├── configs/
 │   ├── meal_database.yml       # Structured meal database with metadata
+│   ├── recipe_config.yml       # Recipe API configuration with credentials
+│   ├── recipe_config_template.yml # Template for recipe configuration
 │   ├── templates/
 │   │   ├── beginner.yml
 │   │   ├── intermediate.yml
-│   │   └── advanced.yml
+│   │   ├── advanced.yml
+│   │   └── enhanced_with_recipes.yml # Template with recipe integration
 │   └── personal/
 │       └── my_plan.yml
 ├── src/
@@ -370,24 +441,30 @@ PFA_plan/
 │   ├── fitness_calculator.py    # Progression calculations
 │   ├── nutrition_planner.py     # Meal planning and macros
 │   ├── meal_generator.py        # Advanced meal combination engine
+│   ├── enhanced_meal_generator.py # Recipe-enhanced meal generation
+│   ├── recipe_fetcher.py        # Multi-API recipe integration
 │   ├── supplement_scheduler.py  # Supplement timing optimization
-│   ├── calendar_generator.py    # ICS file generation
+│   ├── calendar_generator.py    # ICS file generation with recipe support
 │   └── progression_engine.py    # Workout programming
 ├── scripts/
 │   └── run-graph.sh            # Graph service launcher
 ├── outputs/
 │   └── calendars/
 │       ├── PFA_Workouts.ics
-│       ├── PFA_Meals.ics       # Contains 3 options per meal (9+ daily)
+│       ├── PFA_Meals.ics       # Single events with 3 options + recipes
 │       └── PFA_Supplements.ics
 ├── venvs/
 │   ├── main/                   # Main Python virtual environment
 │   └── graph/                  # Graph service virtual environment
-├── generate_pfa_plan.py        # Main Python script
+├── .env                        # Environment variables (API credentials)
+├── generate_pfa_plan.py        # Main Python script with Ctrl+C handling
 ├── run_pfa_plan.sh            # All-in-one execution script
 ├── extract_graph.py           # Knowledge graph extraction
 ├── graph_api.py               # FastAPI graph service wrapper
 ├── requirements.txt           # Python dependencies
 ├── README.md                  # User documentation
-└── CLAUDE.md                  # Project specifications
+├── CLAUDE.md                  # Project specifications
+├── RECIPE_QUICKSTART.md       # Recipe integration guide
+└── docs/
+    └── RECIPE_INTEGRATION.md   # Detailed recipe system documentation
 ```

@@ -1,3 +1,6 @@
+# Recipe integration configuration
+recipe_config: "configs/recipe_config.yml"
+
 timeline:
   start_date: "2025-09-26"
   weeks: 40
@@ -35,6 +38,29 @@ nutrition:
     protein: 35              # 35% of calories from protein
     carbs: 30                # 30% of calories from carbs
     fat: 35                  # 35% of calories from fat
+
+  # Recipe tag filtering (requires recipe integration to be enabled)
+  # Available Edamam API tags (from official documentation):
+  #
+  # Health Labels: Alcohol-Free, Dairy-Free, Egg-Free, Gluten-Free, Keto-Friendly,
+  #   Vegan, Vegetarian, Wheat-Free, Peanut-Free, Tree-Nut-Free, Soy-Free,
+  #   Fish-Free, Shellfish-Free, Pork-Free, Red-Meat-Free, Crustacean-Free
+  #
+  # Diet Labels: Balanced, High-Fiber, High-Protein, Low-Carb, Low-Fat, Low-Sodium
+  #
+  # Cuisine Types: American, Asian, British, Chinese, French, Greek, Indian,
+  #   Italian, Japanese, Mediterranean, Mexican, Middle Eastern
+  #
+  # Dish Types: Bread, Desserts, Main Course, Pasta, Pizza, Salad, Sandwiches,
+  #   Soup, Starter
+  #
+  # Meal Types: Breakfast, Brunch, Lunch/Dinner, Snack, Teatime
+  recipe_tags:
+    # Include recipes that have ANY of these tags
+    include_tags: ["Vegan"]   # Example: filter FOR Vegan recipes
+
+    # Exclude recipes that have ANY of these tags
+    exclude_tags: ["Gluten-Free"]  # Example: filter AGAINST Gluten-Free recipes
 
   meal_timing:
     pre_workout: "-30"        # Minutes before workout

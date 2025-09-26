@@ -50,6 +50,16 @@ else
     source venvs/main/bin/activate
 fi
 
+# Load environment variables from .env file
+if [ -f ".env" ]; then
+    echo -e "${BLUE}🔧 Loading environment variables from .env...${NC}"
+    set -a
+    source .env
+    set +a
+else
+    echo -e "${YELLOW}⚠️  No .env file found - API credentials may not be available${NC}"
+fi
+
 # Check if Python script exists
 if [ ! -f "generate_pfa_plan.py" ]; then
     echo -e "${RED}❌ generate_pfa_plan.py not found!${NC}"

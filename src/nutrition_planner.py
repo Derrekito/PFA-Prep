@@ -14,7 +14,7 @@ from meal_generator import MealGenerator
 class NutritionPlanner:
     """Handles meal planning, macro distribution, and eating window management."""
 
-    def __init__(self, nutrition_config):
+    def __init__(self, nutrition_config, meal_generator=None):
         # Handle both dict and dataclass inputs
         if hasattr(nutrition_config, '__dict__'):
             # It's a dataclass, convert to dict
@@ -30,14 +30,17 @@ class NutritionPlanner:
         self.dietary_preferences = self.config['dietary_preferences']
         self._warned_meal_times = set()  # Track which meal times we've warned about
 
-        # Initialize meal generator if meal database is available
-        self.meal_generator = None
-        if (self.config.get('meal_database') is not None and
-            self.config.get('meal_generation') is not None):
+        # Use provided meal generator or create default one if meal database is available
+        if meal_generator:
+            self.meal_generator = meal_generator
+        elif (self.config.get('meal_database') is not None and
+              self.config.get('meal_generation') is not None):
             self.meal_generator = MealGenerator(
                 self.config['meal_database'],
                 self.config['meal_generation']
             )
+        else:
+            self.meal_generator = None
 
     def calculate_macro_grams(self) -> Dict[str, int]:
         """Convert macro percentages to gram targets based on calorie goal."""

@@ -1,0 +1,86 @@
+# Recipe Integration Configuration
+# This file enables integration with external recipe APIs
+
+recipe_integration:
+  # Enable/disable recipe fetching
+  enable_recipes: true
+
+  # What percentage of meal options should be recipes vs component-based meals
+  # 0.3 = 30% recipes, 70% component meals
+  recipe_ratio: 0.3
+
+  # Maximum number of recipes to show per meal type
+  max_recipes_per_meal: 2
+
+  # Recipe API configurations
+  recipe_apis:
+    # TheMealDB - Completely free, no API key required
+    # DISABLED: No dietary filtering support, returns junk food
+    themealdb:
+      enabled: false
+
+    # Edamam Recipe Search API - Free tier available
+    # Get credentials at: https://developer.edamam.com/
+    edamam:
+      enabled: true   # Enabled with real credentials
+      app_id: "${EDAMAM_APPLICATION_ID}"
+      app_key: "${EDAMAM_APPLICATION_KEY}"
+
+    # Spoonacular Food API - Free tier available
+    # Get credentials at: https://spoonacular.com/food-api
+    spoonacular:
+      enabled: false  # Disabled - requires paid account
+      api_key: "${SPOONACULAR_API_KEY}"
+
+  # Dietary filters to apply when searching for recipes
+  dietary_filters: []     # Disabled - filters too restrictive, no recipes found
+
+  # Recipe preferences
+  preferences:
+    # Preferred difficulty levels
+    difficulty_preference: ["easy", "medium"]
+
+    # Maximum cooking time (minutes)
+    max_cook_time: 45
+
+    # Minimum rating (if available from API)
+    min_rating: 3.5
+
+  # Cache settings
+  cache:
+    # How long to cache recipe results (seconds)
+    cache_duration: 3600  # 1 hour
+
+    # Maximum number of recipes to cache per meal type
+    max_cache_size: 50
+
+# Integration with existing meal database
+meal_database_integration:
+  # How to match ingredients between your database and recipe APIs
+  ingredient_matching:
+    use_fuzzy_matching: true
+    similarity_threshold: 0.7
+
+  # Component prioritization when searching for recipes
+  component_priority:
+    proteins: 3    # Highest priority - recipes must include proteins
+    vegetables: 2  # Medium priority - vegetables preferred
+    carbs: 1       # Lower priority - carbs are optional
+    fruits: 1      # Lower priority - fruits are optional
+
+# Recipe display and formatting
+display_settings:
+  # How to format recipe instructions in calendar events
+  instruction_preview_length: 200  # Characters
+
+  # How to format ingredient lists in calendar events
+  ingredient_display_limit: 8  # Maximum ingredients to show
+
+  # Show cooking difficulty in calendar events
+  show_difficulty: true
+
+  # Show estimated prep/cook times
+  show_timing: true
+
+  # Show recipe source/URL
+  show_source: true

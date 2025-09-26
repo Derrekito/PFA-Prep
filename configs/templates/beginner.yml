@@ -1,6 +1,9 @@
 # PFA Planning System - Beginner Template
 # For those starting from a low fitness baseline
 
+# Recipe integration configuration
+recipe_config: "configs/recipe_config.yml"
+
 timeline:
   start_date: "2025-01-15"
   weeks: 20                    # Longer timeline for gradual progression
@@ -126,7 +129,7 @@ calendar:
       reminders: [-20, -10]    # More advance warning
 
     meals:
-      name: "PFA_Beginner_Meals"
+      name: "PFA_Meals"
       color: "green"
       default_duration: 30
       reminders: [-15]

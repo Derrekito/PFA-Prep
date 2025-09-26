@@ -7,8 +7,24 @@ Generates comprehensive Physical Fitness Assessment training plans.
 import sys
 import argparse
 import yaml
+import signal
+import os
 from pathlib import Path
 from datetime import datetime
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # Fallback: manually load .env file
+    env_file = Path(__file__).parent / '.env'
+    if env_file.exists():
+        with open(env_file) as f:
+            for line in f:
+                if '=' in line and not line.strip().startswith('#'):
+                    key, value = line.strip().split('=', 1)
+                    os.environ[key] = value
 
 # Add src directory to path for imports
 sys.path.append(str(Path(__file__).parent / 'src'))
@@ -19,6 +35,15 @@ from nutrition_planner import NutritionPlanner
 from supplement_scheduler import SupplementScheduler
 from progression_engine import WorkoutProgressionEngine
 from calendar_generator import CalendarGenerator
+
+# Import meal generator with recipe support
+try:
+    from enhanced_meal_generator import EnhancedMealGenerator as MealGeneratorWithRecipes
+    from logging_config import setup_logger, set_global_logging_level, get_logging_level_from_env
+    RECIPE_SUPPORT_AVAILABLE = True
+except ImportError as e:
+    print(f"Recipe meal generator not available: {e}")
+    RECIPE_SUPPORT_AVAILABLE = False
 
 
 def create_default_template(output_path: str):
@@ -73,15 +98,27 @@ def validate_configuration(config):
 
 def generate_plan(config_path: str):
     """Generate complete PFA plan from configuration."""
-    print(f"Loading configuration from: {config_path}")
+    # Set up main system logger
+    if RECIPE_SUPPORT_AVAILABLE:
+        logger = setup_logger('pfa_system')
+        logger.info(f"Loading configuration from: {config_path}")
+    else:
+        logger = None
+        print(f"Loading configuration from: {config_path}")
 
     try:
         config = load_config(config_path)
     except Exception as e:
-        print(f"Error loading configuration: {str(e)}")
+        if logger:
+            logger.error(f"Error loading configuration: {str(e)}")
+        else:
+            print(f"Error loading configuration: {str(e)}")
         return False
 
-    print("Validating configuration...")
+    if logger:
+        logger.info("Validating configuration...")
+    else:
+        print("Validating configuration...")
     issues = validate_configuration(config)
 
     if issues:
@@ -93,7 +130,10 @@ def generate_plan(config_path: str):
         if response.lower() != 'y':
             return False
 
-    print("\nGenerating PFA plan...")
+    if logger:
+        logger.info("Generating PFA plan...")
+    else:
+        print("\nGenerating PFA plan...")
 
     # Initialize components
     fitness_calculator = FitnessProgressionCalculator(
@@ -115,7 +155,62 @@ def generate_plan(config_path: str):
     else:
         nutrition_config = config.nutrition.__dict__
 
-    nutrition_planner = NutritionPlanner(nutrition_config)
+    # Load recipe configuration if available
+    recipe_config = None
+    recipe_config_path = getattr(config, 'recipe_config', None)
+    if recipe_config_path:
+        recipe_path = Path(recipe_config_path)
+        if not recipe_path.is_absolute():
+            recipe_path = Path(__file__).parent / recipe_path
+
+        if logger:
+            logger.debug(f"Looking for recipe config at: {recipe_path}")
+        else:
+            print(f"  - Looking for recipe config at: {recipe_path}")
+
+        if recipe_path.exists():
+            with open(recipe_path, 'r') as f:
+                recipe_config = yaml.safe_load(f)
+            # Substitute environment variables
+            from src.config_loader import substitute_env_vars
+            recipe_config = substitute_env_vars(recipe_config)
+
+            if logger:
+                logger.info(f"Recipe integration enabled (using {recipe_path})")
+            else:
+                print(f"  - Recipe integration enabled (using {recipe_path})")
+        else:
+            print(f"  - Recipe config not found at {recipe_path}, using component-based meals only")
+
+    # Use meal generator with recipe support if available and configured
+    if meal_database_path.exists() and recipe_config and RECIPE_SUPPORT_AVAILABLE:
+        try:
+            if logger:
+                logger.info("Using meal generator with recipe integration")
+            else:
+                print(f"  - Using meal generator with recipe integration")
+            # Merge meal generation rules with nutrition config (for tag filtering)
+            meal_generation_rules = meal_database_config.get('meal_generation', {})
+            if 'recipe_tags' in nutrition_config:
+                meal_generation_rules['recipe_tags'] = nutrition_config['recipe_tags']
+
+            meal_generator = MealGeneratorWithRecipes(
+                meal_database_config,
+                meal_generation_rules,
+                recipe_config.get('recipe_integration', {})
+            )
+            nutrition_planner = NutritionPlanner(nutrition_config, meal_generator)
+        except Exception as e:
+            print(f"  - Recipe meal generator failed, falling back to component meals: {e}")
+            nutrition_planner = NutritionPlanner(nutrition_config)
+    else:
+        if not recipe_config:
+            print(f"  - No recipe config specified, using component meals only")
+        elif not RECIPE_SUPPORT_AVAILABLE:
+            print(f"  - Recipe support not available, using component meals only")
+        elif not meal_database_path.exists():
+            print(f"  - No meal database found, using component meals only")
+        nutrition_planner = NutritionPlanner(nutrition_config)
     supplement_scheduler = SupplementScheduler(config.supplements.__dict__)
     progression_engine = WorkoutProgressionEngine(
         config.training.__dict__,
@@ -133,10 +228,23 @@ def generate_plan(config_path: str):
     )
 
     # Generate all components
-    print("  - Creating workout programs...")
+    if logger:
+        logger.info("Creating workout programs...")
+    else:
+        print("  - Creating workout programs...")
     workout_program = progression_engine.generate_full_program(config.timeline.weeks)
 
-    print("  - Planning meals...")
+    if logger:
+        logger.info("Planning meals...")
+    else:
+        print("  - Planning meals...")
+
+    if recipe_config:
+        if logger:
+            logger.info("Fetching recipes from APIs...")
+        else:
+            print("    📝 Fetching recipes from APIs...")
+
     # Generate meal plans for each week
     meal_plans = {}
     try:
@@ -275,5 +383,28 @@ Examples:
     sys.exit(0 if success else 1)
 
 
+def signal_handler(signum, frame):
+    """Handle Ctrl+C gracefully."""
+    print("\n\n🛑 Operation cancelled by user")
+    import os
+    os._exit(1)  # Force immediate exit without cleanup
+
 if __name__ == "__main__":
-    main()
+    # Set up signal handler for Ctrl+C
+    signal.signal(signal.SIGINT, signal_handler)
+
+    # Set up logging based on environment variable
+    if RECIPE_SUPPORT_AVAILABLE:
+        log_level = get_logging_level_from_env()
+        set_global_logging_level(log_level)
+        if log_level == 'DEBUG':
+            print(f"🔧 Logging level set to: {log_level}")
+
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\n🛑 Operation cancelled by user")
+        sys.exit(0)
+    except Exception as e:
+        print(f"\n💥 Unexpected error: {e}")
+        sys.exit(1)

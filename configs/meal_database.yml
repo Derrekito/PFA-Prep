@@ -57,7 +57,7 @@ proteins:
     exclusions: ["ground_beef"]
     prep_time: 10
 
-  - name: "Protein powder (whey)"
+  - name: "Protein shake"
     portion: "1 scoop (25g)"
     calories: 120
     protein: 25
@@ -67,17 +67,6 @@ proteins:
     tags: ["convenient", "high_protein"]
     exclusions: []
     prep_time: 2
-
-  - name: "Cottage cheese (low-fat)"
-    portion: "1 cup (225g)"
-    calories: 163
-    protein: 28
-    carbs: 6
-    fat: 2
-    meal_types: ["breakfast", "snack"]
-    tags: ["casein_protein", "calcium"]
-    exclusions: []
-    prep_time: 0
 
   - name: "Fish sticks"
     portion: "4 pieces (100g)"
@@ -220,7 +209,7 @@ carbs:
     fat: 1
     meal_types: ["lunch", "dinner"]
     tags: ["fiber", "whole_grain"]
-    exclusions: ["white_rice", "quinoa"]
+    exclusions: ["white_rice"]
     prep_time: 25
 
   - name: "White rice"
@@ -244,17 +233,6 @@ carbs:
     tags: ["nutrient_dense", "vitamin_a"]
     exclusions: ["regular_potato"]
     prep_time: 30
-
-  - name: "Quinoa"
-    portion: "1/2 cup cooked"
-    calories: 111
-    protein: 4
-    carbs: 20
-    fat: 2
-    meal_types: ["lunch", "dinner"]
-    tags: ["complete_protein", "gluten_free"]
-    exclusions: ["brown_rice"]
-    prep_time: 15
 
   - name: "Whole grain toast"
     portion: "2 slices"
@@ -342,7 +320,7 @@ vegetables:
     fat: 0
     meal_types: ["lunch", "dinner"]
     tags: ["low_carb", "rice_substitute"]
-    exclusions: ["brown_rice", "quinoa"]
+    exclusions: ["brown_rice"]
     prep_time: 10
 
   - name: "Mixed salad greens"
@@ -486,8 +464,8 @@ meal_generation:
     breakfast:
       required_components: ["proteins"]
       optional_components: ["carbs", "fruits"]
-      min_protein: 15
-      target_calories: [300, 450]
+      min_protein: 8
+      target_calories: [200, 500]
       weekend_preference: ["steel_cut_oats", "almond_butter"]
 
     lunch:
