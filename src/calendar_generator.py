@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 from time_utils import parse_time_string
+from progress_utils import get_progress_tracker
 
 
 class CalendarGenerator:
@@ -99,6 +100,9 @@ class CalendarGenerator:
 
     def generate_workout_calendar(self, workout_data: Dict[str, Any], start_date: date, weeks: int) -> str:
         """Generate workout calendar."""
+        progress = get_progress_tracker()
+        progress.add_calendar_progress("workout")
+
         calendar_config = self.config.get('workout', {})
         calendar_name = calendar_config.get('name', 'PFA_Workouts')
         color = calendar_config.get('color', 'blue')
@@ -171,6 +175,9 @@ class CalendarGenerator:
 
     def generate_meals_calendar(self, meal_data: Dict[str, Any], start_date: date, weeks: int) -> str:
         """Generate meals calendar."""
+        progress = get_progress_tracker()
+        progress.add_calendar_progress("meals")
+
         calendar_config = self.config.get('separate_calendars', {}).get('meals', {})
         calendar_name = calendar_config.get('name', 'PFA_Meals')
         color = calendar_config.get('color', 'green')
@@ -337,6 +344,9 @@ class CalendarGenerator:
 
     def generate_supplements_calendar(self, supplement_data: Dict[str, Any], start_date: date, weeks: int) -> str:
         """Generate supplements calendar."""
+        progress = get_progress_tracker()
+        progress.add_calendar_progress("supplements")
+
         calendar_config = self.config.get('supplements', {})
         calendar_name = calendar_config.get('name', 'PFA_Supplements')
         color = calendar_config.get('color', 'orange')

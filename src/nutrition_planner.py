@@ -9,6 +9,7 @@ from time_utils import (
     calculate_eating_duration, add_minutes_to_time, is_time_in_window
 )
 from meal_generator import MealGenerator
+from logging_config import setup_logger
 
 
 class NutritionPlanner:
@@ -41,6 +42,9 @@ class NutritionPlanner:
             )
         else:
             self.meal_generator = None
+
+        # Set up logging
+        self.logger = setup_logger('nutrition_planner')
 
     def calculate_macro_grams(self) -> Dict[str, int]:
         """Convert macro percentages to gram targets based on calorie goal."""
@@ -200,17 +204,10 @@ class NutritionPlanner:
                     self._warned_meal_times.add(warning_key)
 
         if violations:
-            print("\\nMeal Timing Issues:")
+            self.logger.warning("Meal timing issues detected:")
             for violation in violations:
-                print(f"  - WARNING: {violation}")
-
-            try:
-                response = input("\\nProceed anyway? (y/N): ")
-                if response.lower() != 'y':
-                    raise ValueError("Meal planning cancelled due to eating window violations")
-            except EOFError:
-                # Non-interactive mode, assume 'yes' to continue
-                print("\\nNon-interactive mode detected, proceeding with violations...")
+                self.logger.warning(f"  {violation}")
+            self.logger.info("Proceeding with meal plan despite timing violations")
 
     def generate_meal_options(self) -> Dict[str, List[str]]:
         """Generate meal options based on dietary preferences."""

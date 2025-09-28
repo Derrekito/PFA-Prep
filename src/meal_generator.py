@@ -4,12 +4,16 @@
 import random
 from typing import Dict, Any, List, Tuple, Optional, Set
 from itertools import combinations
+from progress_utils import get_progress_tracker
+from recipe_fetcher import RecipeFetcher, Recipe
+from logging_config import setup_logger
 
 
 class MealGenerator:
     """Generates meal combinations from structured meal database."""
 
-    def __init__(self, meal_database: Dict[str, Any], generation_rules: Dict[str, Any]):
+    def __init__(self, meal_database: Dict[str, Any], generation_rules: Dict[str, Any],
+                 recipe_config: Dict[str, Any] = None):
         self.meal_database = meal_database
         self.generation_rules = generation_rules
         self.options_per_meal = generation_rules.get('options_per_meal', 3)
@@ -18,6 +22,23 @@ class MealGenerator:
 
         # Track recent combinations for variety
         self.recent_combinations = {}
+
+        # Recipe integration setup
+        self.logger = setup_logger('meal_generator')
+        self.recipe_fetcher = RecipeFetcher(recipe_config or {}) if recipe_config else None
+        self.recipe_config = recipe_config or {}
+
+        # Recipe integration settings
+        self.recipe_ratio = self.recipe_config.get('recipe_ratio', 0.3)  # 30% recipes, 70% components
+        self.enable_recipes = self.recipe_config.get('enable_recipes', True)
+        self.dietary_filters = self.recipe_config.get('dietary_filters', [])
+        self.max_recipes_per_meal = self.recipe_config.get('max_recipes_per_meal', 2)
+
+        # Tag filtering settings - get from nutrition config passed in generation_rules
+        self.tag_filters = generation_rules.get('recipe_tags', {})
+
+        # Cache for fetched recipes
+        self._recipe_cache = {}
 
     def _get_items_by_component(self, component: str, meal_type: str) -> List[Dict[str, Any]]:
         """Get all items of a specific component type that are appropriate for meal type."""
@@ -114,7 +135,7 @@ class MealGenerator:
         # Return preferred items first, then regular items
         return preferred_items + regular_items
 
-    def generate_meal_options(self, meal_type: str, day: str = 'Monday',
+    def _generate_component_meal_options(self, meal_type: str, day: str = 'Monday',
                             num_options: Optional[int] = None) -> List[Dict[str, Any]]:
         """Generate multiple meal options for a specific meal type and day."""
         if num_options is None:
@@ -187,6 +208,7 @@ class MealGenerator:
 
                 meal_option = {
                     'description': meal_description,
+                    'type': 'component_only',  # Mark as component-based meal
                     'items': selected_items,
                     'totals': totals,
                     'prep_time': sum(item.get('prep_time', 0) for item in selected_items)
@@ -209,13 +231,28 @@ class MealGenerator:
 
         return meal_options
 
+    def generate_meal_options(self, meal_type: str, day: str = 'Monday',
+                             num_options: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Generate meal options, mixing component-based meals and recipes if available."""
+        if self.recipe_fetcher and self.enable_recipes:
+            # Use mixed approach with recipes
+            return self.generate_mixed_meal_options(meal_type, day, num_options)
+        else:
+            # Use component-only approach
+            return self._generate_component_meal_options(meal_type, day, num_options)
+
     def generate_daily_meal_plan(self, day: str, meal_types: List[str]) -> Dict[str, List[Dict[str, Any]]]:
         """Generate complete daily meal plan with multiple options per meal."""
+        progress = get_progress_tracker()
+        progress.log_message(f"Generating daily meal plan for {day} with meals: {meal_types}")
         daily_plan = {}
 
         for meal_type in meal_types:
+            self.logger.debug(f"Processing {meal_type} for {day}")
+            progress.add_meal_progress(meal_type, day)
             daily_plan[meal_type] = self.generate_meal_options(meal_type, day)
 
+        progress.log_message(f"Completed daily meal plan for {day}")
         return daily_plan
 
     def generate_weekly_meal_plan(self, week_number: int = 1) -> Dict[str, Any]:
@@ -236,3 +273,178 @@ class MealGenerator:
             weekly_plan['daily_plans'][day] = self.generate_daily_meal_plan(day, meal_types)
 
         return weekly_plan
+
+    # ===============================
+    # RECIPE INTEGRATION METHODS
+    # ===============================
+
+    def _create_recipe_meal_option(self, recipe: Recipe, meal_type: str) -> Dict[str, Any]:
+        """Convert a Recipe object to a meal option format."""
+        # Format ingredients for display
+        ingredients_text = "; ".join(recipe.ingredients[:8])  # Limit to first 8 ingredients
+        if len(recipe.ingredients) > 8:
+            ingredients_text += f" (and {len(recipe.ingredients) - 8} more)"
+
+        # Format instructions for display (first 3 steps)
+        instructions_text = ". ".join(recipe.instructions[:3])
+        if len(recipe.instructions) > 3:
+            instructions_text += f" (and {len(recipe.instructions) - 3} more steps)"
+
+        description = f"{recipe.name} (Recipe)"
+        if recipe.servings > 1:
+            description += f" - Serves {recipe.servings}"
+
+        meal_option = {
+            'description': description,
+            'type': 'recipe',
+            'recipe_id': recipe.id,
+            'recipe': {
+                'name': recipe.name,
+                'ingredients': recipe.ingredients,
+                'instructions': recipe.instructions,
+                'prep_time': recipe.prep_time,
+                'cook_time': recipe.cook_time,
+                'total_time': recipe.total_time,
+                'servings': recipe.servings,
+                'source_api': recipe.source_api,
+                'source_url': recipe.source_url,
+                'difficulty': recipe.difficulty,
+                'tags': recipe.tags
+            },
+            'totals': recipe.nutrition,
+            'prep_time': recipe.total_time,
+            'ingredients_display': ingredients_text,
+            'instructions_preview': instructions_text,
+            'servings': recipe.servings,
+            'source': f"Recipe from {recipe.source_api}",
+            'items': []  # Empty for recipes since they're self-contained
+        }
+
+        return meal_option
+
+    def _meets_recipe_requirements(self, recipe: Recipe, meal_type: str) -> bool:
+        """Check if recipe meets meal type requirements."""
+        if meal_type not in self.combination_rules:
+            return True
+
+        rules = self.combination_rules[meal_type]
+
+        # Check protein minimum
+        min_protein = rules.get('min_protein', 0)
+        if recipe.nutrition.get('protein', 0) < min_protein:
+            return False
+
+        # Check calorie range
+        target_calories = rules.get('target_calories', [0, 10000])
+        recipe_calories = recipe.nutrition.get('calories', 0)
+        if not (target_calories[0] <= recipe_calories <= target_calories[1]):
+            return False
+
+        return True
+
+    def _meets_tag_requirements(self, recipe: Recipe) -> bool:
+        """Check if recipe meets tag filtering requirements."""
+        if not self.tag_filters:
+            return True
+
+        recipe_tags = recipe.tags or []
+
+        # Check include tags - recipe must have at least one of these tags
+        include_tags = self.tag_filters.get('include_tags', [])
+        if include_tags:
+            has_include_tag = any(tag in recipe_tags for tag in include_tags)
+            if not has_include_tag:
+                self.logger.debug(f"Recipe '{recipe.name}' excluded: missing required tags {include_tags} (has: {recipe_tags})")
+                return False
+
+        # Check exclude tags - recipe must not have any of these tags
+        exclude_tags = self.tag_filters.get('exclude_tags', [])
+        if exclude_tags:
+            has_exclude_tag = any(tag in recipe_tags for tag in exclude_tags)
+            if has_exclude_tag:
+                self.logger.debug(f"Recipe '{recipe.name}' excluded: has forbidden tags {exclude_tags} (has: {recipe_tags})")
+                return False
+
+        return True
+
+    def generate_mixed_meal_options(self, meal_type: str, day: str, num_options: int = None) -> List[Dict[str, Any]]:
+        """Generate meal options mixing component-based meals and recipes."""
+        if num_options is None:
+            num_options = self.options_per_meal
+
+        meal_options = []
+
+        # Calculate split between component meals and recipes
+        target_recipes = min(self.max_recipes_per_meal, max(1, int(num_options * self.recipe_ratio)))
+        target_components = num_options - target_recipes
+
+        # Generate component-based meals first
+        component_meals = self._generate_component_meal_options(meal_type, day, target_components)
+        meal_options.extend(component_meals)
+
+        # Add recipes if enabled
+        if self.recipe_fetcher and self.enable_recipes:
+            try:
+                # Get recipes for this meal type
+                recipes = self._get_recipes_for_meal(meal_type)
+
+                # Convert recipes to meal options
+                recipes_added = 0
+                for recipe in recipes[:target_recipes]:
+                    recipe_option = self._create_recipe_meal_option(recipe, meal_type)
+                    meal_options.append(recipe_option)
+                    recipes_added += 1
+
+                # Update progress with recipe info
+                if recipes:
+                    progress = get_progress_tracker()
+                    progress.add_recipe_progress(len(recipes), meal_type)
+
+                # If we didn't get enough recipes, fill with more component meals
+                if recipes_added < target_recipes and len(component_meals) < num_options:
+                    additional_components = self._generate_component_meal_options(
+                        meal_type, day, num_options - len(meal_options)
+                    )
+                    meal_options.extend(additional_components)
+
+            except Exception as e:
+                self.logger.error(f"Error adding recipes to {meal_type}: {e}")
+                # Fill with more component meals if recipes failed
+                if len(meal_options) < num_options:
+                    additional_components = self._generate_component_meal_options(
+                        meal_type, day, num_options - len(meal_options)
+                    )
+                    meal_options.extend(additional_components)
+
+        return meal_options[:num_options]
+
+    def _get_recipes_for_meal(self, meal_type: str) -> List[Recipe]:
+        """Get suitable recipes for a meal type."""
+        if not self.recipe_fetcher:
+            return []
+
+        # Get sample components for this meal type to use for recipe search
+        meal_components = []
+        if meal_type in self.combination_rules:
+            rules = self.combination_rules[meal_type]
+            required_components = rules.get('required_components', [])
+
+            # Get representative items from each required component
+            for component in required_components[:2]:  # Limit to first 2 components
+                items = self._get_items_by_component(component, meal_type)
+                if items:
+                    meal_components.append(items[0])  # Use first item as representative
+
+        # Try to find recipes matching meal components
+        recipes = self.recipe_fetcher.find_recipes_for_meal_components(
+            meal_components, meal_type, self.dietary_filters
+        )
+
+        # Filter recipes that meet requirements
+        suitable_recipes = []
+        for recipe in recipes:
+            if (self._meets_recipe_requirements(recipe, meal_type) and
+                self._meets_tag_requirements(recipe)):
+                suitable_recipes.append(recipe)
+
+        return suitable_recipes[:self.max_recipes_per_meal]

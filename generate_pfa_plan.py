@@ -35,14 +35,15 @@ from nutrition_planner import NutritionPlanner
 from supplement_scheduler import SupplementScheduler
 from progression_engine import WorkoutProgressionEngine
 from calendar_generator import CalendarGenerator
+from progress_utils import get_progress_tracker, reset_progress_tracker
 
-# Import meal generator with recipe support
+# Import meal generator (now unified with recipe support)
 try:
-    from enhanced_meal_generator import EnhancedMealGenerator as MealGeneratorWithRecipes
+    from meal_generator import MealGenerator
     from logging_config import setup_logger, set_global_logging_level, get_logging_level_from_env
     RECIPE_SUPPORT_AVAILABLE = True
 except ImportError as e:
-    print(f"Recipe meal generator not available: {e}")
+    print(f"Meal generator not available: {e}")
     RECIPE_SUPPORT_AVAILABLE = False
 
 
@@ -194,7 +195,7 @@ def generate_plan(config_path: str):
             if 'recipe_tags' in nutrition_config:
                 meal_generation_rules['recipe_tags'] = nutrition_config['recipe_tags']
 
-            meal_generator = MealGeneratorWithRecipes(
+            meal_generator = MealGenerator(
                 meal_database_config,
                 meal_generation_rules,
                 recipe_config.get('recipe_integration', {})
@@ -239,26 +240,29 @@ def generate_plan(config_path: str):
     else:
         print("  - Planning meals...")
 
+    # Initialize progress tracker
+    progress = get_progress_tracker()
+    progress.start(config.timeline.weeks)
+
     if recipe_config:
-        if logger:
-            logger.info("Fetching recipes from APIs...")
-        else:
-            print("    📝 Fetching recipes from APIs...")
+        progress.log_message("Fetching recipes from APIs...")
 
     # Generate meal plans for each week
     meal_plans = {}
     try:
         for week in range(config.timeline.weeks):
+            progress.update_status(f"Starting week {week + 1} of {config.timeline.weeks}...")
             weekly_meals = nutrition_planner.generate_advanced_meal_plan(week + 1)
             meal_plans[f'week_{week + 1}'] = weekly_meals
     except ValueError as e:
+        progress.finish()
         if "Meal planning cancelled" in str(e):
             print(f"\n❌ Meal planning cancelled. Please fix the configuration conflicts and try again.")
             return False
         else:
             raise
 
-    print("  - Scheduling supplements...")
+    progress.update_status("Scheduling supplements...")
     # Create workout schedule for supplement timing
     workout_schedule = {}
     workout_times = getattr(config.training, 'workout_times', {})
@@ -271,8 +275,9 @@ def generate_plan(config_path: str):
         workout_schedule[day] = datetime.strptime(time_str, '%H:%M').time()
 
     supplement_schedule = supplement_scheduler.generate_weekly_schedule(workout_schedule)
+    progress.advance(1)
 
-    print("  - Generating calendars...")
+    progress.update_status("Generating calendars...")
     all_data = {
         'workouts': workout_program['weekly_workouts'],
         'meals': meal_plans,
@@ -303,6 +308,9 @@ def generate_plan(config_path: str):
     print(f"\nCalendar Files Generated:")
     for calendar_type, file_path in calendar_files.items():
         print(f"  📅 {calendar_type.title()}: {file_path}")
+
+    # Finish progress tracking
+    progress.finish()
 
     print(f"\n🎯 Next Steps:")
     print(f"  1. Import calendar files into your calendar app")

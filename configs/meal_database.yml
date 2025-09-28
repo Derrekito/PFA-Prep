@@ -464,27 +464,27 @@ meal_generation:
     breakfast:
       required_components: ["proteins"]
       optional_components: ["carbs", "fruits"]
-      min_protein: 8
-      target_calories: [200, 500]
+      min_protein: 3
+      target_calories: [50, 1200]
       weekend_preference: ["steel_cut_oats", "almond_butter"]
 
     lunch:
       required_components: ["proteins", "vegetables"]
       optional_components: ["carbs"]
-      min_protein: 20
-      target_calories: [400, 600]
+      min_protein: 5
+      target_calories: [100, 1200]
 
     dinner:
       required_components: ["proteins", "vegetables"]
       optional_components: ["carbs"]
-      min_protein: 25
-      target_calories: [450, 650]
+      min_protein: 8
+      target_calories: [150, 1200]
 
     snack:
       required_components: ["proteins"]
       optional_components: ["carbs", "fruits"]
-      min_protein: 10
-      target_calories: [120, 250]
+      min_protein: 1
+      target_calories: [50, 800]
 
   variety_rules:
     max_repeat_frequency: 2  # Same combination max 2x per week

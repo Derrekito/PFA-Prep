@@ -47,6 +47,10 @@ class RecipeFetcher:
         self.last_request_times = {}
         self.min_request_interval = 1.0  # seconds between requests
 
+        # Circuit breaker to prevent hanging on failing APIs
+        self.api_failure_counts = {}
+        self.max_failures_per_api = 3
+
     def _rate_limit_wait(self, api_name: str):
         """Ensure we don't exceed API rate limits."""
         now = time.time()
@@ -59,7 +63,7 @@ class RecipeFetcher:
 
         self.last_request_times[api_name] = time.time()
 
-    def _make_request(self, url: str, headers: Dict[str, str] = None, timeout: int = 10) -> Optional[Dict]:
+    def _make_request(self, url: str, headers: Dict[str, str] = None, timeout: int = 5) -> Optional[Dict]:
         """Make HTTP request with error handling."""
         try:
             response = requests.get(url, headers=headers or {}, timeout=timeout)
@@ -93,10 +97,10 @@ class RecipeFetcher:
             self.logger.warning(f"API request timed out after {timeout}s")
             return None
         except requests.exceptions.ConnectionError:
-            self.logger.error(f"API connection failed - check network connectivity")
+            self.logger.warning(f"API connection failed - check network connectivity")
             return None
         except requests.exceptions.RequestException as e:
-            self.logger.error(f"API request failed - {str(e)[:50]}...")
+            self.logger.warning(f"API request failed - {str(e)[:50]}...")
             return None
         except Exception as e:
             self.logger.error(f"Unexpected API error - {str(e)[:50]}...")
@@ -464,16 +468,29 @@ class RecipeFetcher:
                 self.logger.debug(f"Skipping {api_name} API: disabled in config")
                 continue
 
+            # Circuit breaker: Skip APIs that have failed too many times
+            if self.api_failure_counts.get(api_name, 0) >= self.max_failures_per_api:
+                self.logger.debug(f"Skipping {api_name} API: too many recent failures")
+                continue
+
             try:
                 recipes = fetch_func(ingredients, dietary_filters or [])
                 all_recipes.extend(recipes)
-                self.logger.info(f"({api_name.title()}) Fetched {len(recipes)} recipes")
+                # Use progress tracker for user-visible messages
+                from progress_utils import get_progress_tracker
+                progress = get_progress_tracker()
+                progress.log_message(f"({api_name.title()}) Fetched {len(recipes)} recipes")
+
+                # Reset failure count on success
+                self.api_failure_counts[api_name] = 0
 
                 if len(all_recipes) >= max_recipes:
                     break
 
             except Exception as e:
                 self.logger.error(f"Error fetching from {api_name}: {e}")
+                # Increment failure count
+                self.api_failure_counts[api_name] = self.api_failure_counts.get(api_name, 0) + 1
                 continue
 
         # Remove duplicates based on similar names
@@ -563,7 +580,9 @@ class RecipeFetcher:
             recipes = self.fetch_recipes_for_ingredients(ingredients, dietary_filters)
 
             if recipes:
-                self.logger.info(f"Found {len(recipes)} recipes with: {', '.join(ingredients)}")
+                from progress_utils import get_progress_tracker
+                progress = get_progress_tracker()
+                progress.log_message(f"Found {len(recipes)} recipes with: {', '.join(ingredients)}")
                 self.logger.debug(f"Raw recipes found: {len(recipes)}")
 
                 # Debug: Show what meal types we got
@@ -573,13 +592,13 @@ class RecipeFetcher:
                 # Filter recipes appropriate for meal type
                 self.logger.debug(f"Filtering for meal_type: '{meal_type}'")
                 filtered_recipes = [r for r in recipes if meal_type in r.meal_types]
-                self.logger.info(f"Returning {len(filtered_recipes)} recipes for {meal_type}")
+                progress.log_message(f"Returning {len(filtered_recipes)} recipes for {meal_type}")
 
                 if filtered_recipes:
                     return filtered_recipes
                 else:
                     # Return unfiltered if no meal-type specific recipes
-                    self.logger.warning(f"No meal-type specific recipes, returning first 3 unfiltered")
+                    progress.log_message(f"No meal-type specific recipes, returning first 3 unfiltered", "warning")
                     return recipes[:3]  # Limit to 3 best matches
 
         self.logger.warning(f"No recipes found after all fallback attempts")

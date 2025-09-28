@@ -329,6 +329,14 @@ calendar:
 
 All configuration options (start date, weeks, formats, output directory, etc.) are specified in the YAML config file itself. The shell script handles virtual environment setup and activation automatically.
 
+### Virtual Environment Management
+The project uses Python virtual environments to isolate dependencies:
+- **Main venv**: `venvs/main/` - Created automatically by `run_pfa_plan.sh` on first run
+- **Graph venv**: `venvs/graph/` - Created by `./scripts/run-graph.sh` for development tools
+- **Requirements**: All dependencies listed in `requirements.txt` are auto-installed
+
+**IMPORTANT**: Always use the provided shell scripts (`run_pfa_plan.sh`) rather than running Python directly, as they handle virtual environment activation and dependency management.
+
 ## Shell Scripts
 
 ### run_pfa_plan.sh
@@ -468,3 +476,30 @@ PFA_plan/
 └── docs/
     └── RECIPE_INTEGRATION.md   # Detailed recipe system documentation
 ```
+
+# CRITICAL DEVELOPMENT MANDATES
+
+## Logging Requirements
+**NEVER USE print() STATEMENTS FOR DEBUG OUTPUT**
+
+All debug, info, warning, and error output MUST use the logging library. The project has a centralized logging configuration in `src/logging_config.py`.
+
+### Required Usage:
+```python
+from logging_config import setup_logger
+logger = setup_logger('module_name')
+
+# Use these instead of print():
+logger.debug("Debug information")
+logger.info("Informational messages")
+logger.warning("Warning messages")
+logger.error("Error messages")
+```
+
+### What NOT to do:
+```python
+print("Debug message")  # FORBIDDEN
+print(f"Status: {variable}")  # FORBIDDEN
+```
+
+This mandate ensures clean console output, proper log levels, and professional debugging practices.
